@@ -11,43 +11,107 @@ A native cross-platform mobile app for UGC (User-Generated Content) creators to 
 
 - [Node.js](https://github.com/nvm-sh/nvm) (v18+)
 - [Bun](https://bun.sh/docs/installation) package manager
+- [Xcode](https://developer.apple.com/xcode/) 15+ (for iOS builds)
+- [CocoaPods](https://cocoapods.org/) (`sudo gem install cocoapods`)
+- Active [Apple Developer Program](https://developer.apple.com/programs/) membership
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/texas0418/UGCio-App.git
 cd UGCio-App
 
-# Install dependencies
+# Install JS dependencies
 bun install
 
-# Start development server
+# Generate the native iOS project
+npx expo prebuild --platform ios
+
+# Install CocoaPods dependencies
+cd ios && pod install && cd ..
+```
+
+### Development
+
+```bash
+# Start Metro bundler
+bun run start
+
+# Run on iOS Simulator (press "i" in terminal)
 bun run start
 
 # Start web preview
 bun run start-web
 ```
 
-### Running on Devices
-
-**On your phone:**
-1. Download [Expo Go](https://apps.apple.com/app/expo-go/id982107779) (iOS) or [Expo Go](https://play.google.com/store/apps/details?id=host.exp.exponent) (Android)
+**On your phone with Expo Go:**
+1. Download [Expo Go](https://apps.apple.com/app/expo-go/id982107779)
 2. Run `bun run start` and scan the QR code
 
-**Simulators:**
-```bash
-# iOS Simulator (requires Xcode)
-bun run start -- --ios
+## Building for App Store (Xcode)
 
-# Android Emulator (requires Android Studio)
-bun run start -- --android
+### 1. Generate / Update Native Project
+
+Whenever you add new Expo plugins or update `app.json`, regenerate the native project:
+
+```bash
+npx expo prebuild --platform ios --clean
+cd ios && pod install && cd ..
 ```
+
+### 2. Open in Xcode
+
+```bash
+open ios/ugcportfolioratehub.xcworkspace
+```
+
+> **Important:** Always open the `.xcworkspace` file, not `.xcodeproj`.
+
+### 3. Configure Signing
+
+1. Select the project in Xcode's navigator
+2. Go to **Signing & Capabilities**
+3. Select your **Team** (Apple Developer account)
+4. Ensure **Bundle Identifier** is `com.ugcio.app`
+5. Let Xcode manage signing automatically, or configure manually
+
+### 4. Archive & Submit
+
+1. Set the build target to **Any iOS Device (arm64)** (not a simulator)
+2. **Product → Archive**
+3. Once archived, the **Organizer** window opens
+4. Select your archive → **Distribute App**
+5. Choose **App Store Connect** → **Upload**
+6. Follow the prompts to upload to App Store Connect
+
+### 5. In App Store Connect
+
+1. Go to [App Store Connect](https://appstoreconnect.apple.com)
+2. Select your app → **TestFlight** or **App Store** tab
+3. Fill in metadata, screenshots, and description
+4. Submit for review
+
+### Version Bumps
+
+Update version numbers in `app.json` before each submission:
+
+```json
+{
+  "expo": {
+    "version": "1.0.1",
+    "ios": {
+      "buildNumber": "2"
+    }
+  }
+}
+```
+
+Then regenerate: `npx expo prebuild --platform ios --clean && cd ios && pod install && cd ..`
 
 ## Tech Stack
 
 - **React Native** — Cross-platform native mobile framework
-- **Expo** — React Native platform and tooling
+- **Expo** — React Native platform and tooling (prebuild/bare workflow)
 - **Expo Router** — File-based routing with web support
 - **TypeScript** — Type-safe JavaScript
 - **React Query** — Server state management
@@ -68,6 +132,7 @@ bun run start -- --android
 │   ├── onboarding.tsx     # Onboarding flow
 │   ├── inquiry.tsx        # Inquiry modal
 │   └── invoice.tsx        # Invoice modal
+├── ios/                   # Native iOS project (Xcode)
 ├── assets/                # Static assets (icons, images)
 ├── constants/             # App constants and colors
 ├── contexts/              # React contexts (CreatorContext)
@@ -87,28 +152,10 @@ bun run start -- --android
 - **Invoicing** — Create and send invoices to clients
 - **Inquiry Form** — Let brands reach out to you directly
 
-## Building for Production
-
-### App Store (iOS)
-
-```bash
-bun i -g @expo/eas-cli
-eas build:configure
-eas build --platform ios
-eas submit --platform ios
-```
-
-### Google Play (Android)
-
-```bash
-eas build --platform android
-eas submit --platform android
-```
-
-See [Expo's deployment guide](https://docs.expo.dev/submit/introduction/) for detailed instructions.
-
 ## Troubleshooting
 
-- **App not loading?** Ensure your phone and computer are on the same WiFi. Try `bun start -- --tunnel`.
-- **Build failing?** Clear cache with `bunx expo start --clear`, or reinstall deps: `rm -rf node_modules && bun install`.
-- **Docs**: [Expo](https://docs.expo.dev/) · [React Native](https://reactnative.dev/docs/getting-started)
+- **Pod install fails?** Run `cd ios && pod repo update && pod install && cd ..`
+- **Build errors after plugin changes?** Run `npx expo prebuild --platform ios --clean` to regenerate
+- **Signing issues?** Ensure your Apple Developer membership is active and your bundle ID matches in both Xcode and App Store Connect
+- **Metro not connecting?** Clear cache with `bunx expo start --clear`
+- **Docs**: [Expo Bare Workflow](https://docs.expo.dev/bare/overview/) · [React Native](https://reactnative.dev/docs/getting-started)

@@ -10,8 +10,11 @@ web-build/
 expo-env.d.ts
 
 # Native
-ios/
+# ios/ — committed for Xcode builds
 android/
+ios/Pods/
+ios/.xcode.env.local
+ios/build/
 *.orig.*
 *.jks
 *.p8
@@ -38,10 +41,7 @@ yarn-error.*
 *.tsbuildinfo
 .vercel
 
-.rork
-
 .env
-rork-eslint.config.js
 core
 node_modules
 .expo

@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "rork-app",
+    "scheme": "ugcio",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,14 +15,21 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.rork.ugc-portfolio-rate-hub"
+      "bundleIdentifier": "com.ugcio.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "CFBundleDisplayName": "UGCio",
+        "NSCameraUsageDescription": "UGCio needs camera access to capture content for your portfolio.",
+        "NSPhotoLibraryUsageDescription": "UGCio needs photo library access to add content to your portfolio.",
+        "NSPhotoLibraryAddUsageDescription": "UGCio needs permission to save images to your photo library."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.ugc_portfolio_rate_hub"
+      "package": "com.ugcio.app"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -31,7 +38,7 @@
       [
         "expo-router",
         {
-          "origin": "https://rork.com/"
+          "origin": "https://ugcio.app/"
         }
       ],
       "expo-font",
