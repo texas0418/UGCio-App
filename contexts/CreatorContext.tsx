@@ -69,8 +69,8 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
 
   const hasOnboarded = onboardedQuery.data ?? false;
 
-  const completeOnboarding = useCallback(() => {
-    onboardedMutation.mutate(true);
+  const completeOnboarding = useCallback(async () => {
+    await onboardedMutation.mutateAsync(true);
   }, []);
 
   const profileQuery = useQuery({

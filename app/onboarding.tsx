@@ -112,20 +112,20 @@ export default function OnboardingScreen() {
     [fadeAnim, slideAnim, iconScale]
   );
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     if (currentStep < STEPS.length - 1) {
       animateTransition(currentStep + 1);
     } else {
-      completeOnboarding();
+      await completeOnboarding();
       router.replace("/(tabs)/(home)" as never);
     }
   }, [currentStep, animateTransition, router, completeOnboarding]);
 
-  const handleSkip = useCallback(() => {
-    completeOnboarding();
+  const handleSkip = useCallback(async () => {
+    await completeOnboarding();
     router.replace("/(tabs)/(home)" as never);
   }, [router, completeOnboarding]);
 
