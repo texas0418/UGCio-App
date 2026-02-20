@@ -8,6 +8,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CreatorProvider } from "@/contexts/CreatorContext";
 import Colors from "@/constants/colors";
 
+import { initNotifications } from "@/utils/notifications";
+
 SplashScreen.preventAutoHideAsync();
 
 Notifications.setNotificationHandler({
@@ -56,6 +58,24 @@ function RootLayoutNav() {
           headerTintColor: Colors.text,
         }}
       />
+      <Stack.Screen
+        name="settings"
+        options={{
+          presentation: "modal",
+          title: "Settings",
+          headerStyle: { backgroundColor: Colors.surface },
+          headerTintColor: Colors.text,
+        }}
+      />
+      <Stack.Screen
+        name="about"
+        options={{
+          presentation: "modal",
+          title: "About & Help",
+          headerStyle: { backgroundColor: Colors.surface },
+          headerTintColor: Colors.text,
+        }}
+      />
     </Stack>
   );
 }
@@ -79,6 +99,7 @@ export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync();
     registerForNotifications();
+    initNotifications();
   }, []);
 
   return (

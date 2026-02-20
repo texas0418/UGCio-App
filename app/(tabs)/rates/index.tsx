@@ -283,6 +283,18 @@ export default function RatesScreen() {
         </View>
       )}
 
+      {deliverables.length === 0 && !showAddForm && (
+        <View style={styles.emptyState}>
+          <View style={styles.emptyIconWrap}>
+            <DollarSign size={36} color={Colors.textTertiary} />
+          </View>
+          <Text style={styles.emptyTitle}>No rates yet</Text>
+          <Text style={styles.emptySubtitle}>
+            Add your deliverables and pricing, or start with a template above
+          </Text>
+        </View>
+      )}
+
       {deliverables.map((item) => {
         const isEditing = editingId === item.id;
         return (
@@ -806,5 +818,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textTertiary,
     marginTop: 1,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    gap: 12,
+  },
+  emptyIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700" as const,
+    color: Colors.text,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: "center",
+    maxWidth: 260,
   },
 });

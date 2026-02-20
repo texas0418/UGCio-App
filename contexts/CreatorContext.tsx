@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import createContextHook from "@nkzw/create-context-hook";
+import { scheduleDealReminder, scheduleDealStaleReminder } from "@/utils/notifications";
 import {
   CreatorProfile,
   PortfolioItem,
@@ -55,6 +56,9 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
       const stored = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDED);
       return stored === "true";
     },
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const onboardedMutation = useMutation({
@@ -70,6 +74,7 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
   const hasOnboarded = onboardedQuery.data ?? false;
 
   const completeOnboarding = useCallback(async () => {
+    queryClient.setQueryData(["creator_onboarded"], true);
     await onboardedMutation.mutateAsync(true);
   }, []);
 
@@ -275,6 +280,7 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
     (deal: BrandDeal) => {
       const updated = [deal, ...deals];
       dealsMutation.mutate(updated);
+      scheduleDealReminder(deal).catch(() => {});
     },
     [deals]
   );
@@ -285,6 +291,10 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
         d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d
       );
       dealsMutation.mutate(updated);
+      const updatedDeal = updated.find((d) => d.id === id);
+      if (updatedDeal && updates.status) {
+        scheduleDealStaleReminder(updatedDeal).catch(() => {});
+      }
     },
     [deals]
   );

@@ -50,12 +50,15 @@ const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; icon: Re
   { value: "booked", label: "Fully Booked", icon: Clock, color: Colors.danger, bg: Colors.dangerLight },
 ];
 
+let _hasRedirectedToOnboarding = false;
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { profile, updateProfile, testimonials, addTestimonial, removeTestimonial, hasOnboarded, isLoading } = useCreator();
 
   useEffect(() => {
-    if (!isLoading && !hasOnboarded) {
+    if (!isLoading && !hasOnboarded && !_hasRedirectedToOnboarding) {
+      _hasRedirectedToOnboarding = true;
       router.replace("/onboarding" as never);
     }
   }, [isLoading, hasOnboarded, router]);
