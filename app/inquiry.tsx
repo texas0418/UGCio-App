@@ -45,7 +45,7 @@ export default function InquiryScreen() {
           data: { brandName: form.brandName, email: form.email },
         },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 2 },
-      }).catch((e) => console.log("Notification error:", e));
+      }).catch(() => {});
     }
     Alert.alert(
       "Inquiry Sent!",

@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#09090B"
     },
     "ios": {
       "supportsTablet": false,
@@ -39,6 +39,12 @@
         "expo-router",
         {
           "origin": "https://ugcio.app/"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": []
         }
       ],
       "expo-font",

@@ -89,9 +89,9 @@ async function registerForNotifications() {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
-    console.log("Notification permission:", finalStatus);
+    // Permission status: finalStatus
   } catch (e) {
-    console.log("Notification registration error:", e);
+    // Notification registration failed silently
   }
 }
 
