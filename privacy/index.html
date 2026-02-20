@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — UGCio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #09090B;
+      --surface: #141417;
+      --surface-elevated: #1E1E22;
+      --text: #FAFAFA;
+      --text-secondary: #A1A1AA;
+      --text-tertiary: #52525B;
+      --border: #27272A;
+      --primary: #FF764D;
+      --primary-light: rgba(255, 118, 77, 0.12);
+      --accent: #A78BFA;
+      --accent-light: rgba(167, 139, 250, 0.12);
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 999;
+    }
+
+    .glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(255,118,77,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      background: rgba(9, 9, 11, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+
+    header .inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: inline-block;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .effective-date {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      margin-bottom: 48px;
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 48px;
+    }
+
+    .summary-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .summary-card p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    h2 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    p, li {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    li::marker {
+      color: var(--primary);
+    }
+
+    strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 118, 77, 0.3);
+      transition: border-color 0.2s;
+    }
+
+    a:hover {
+      border-bottom-color: var(--primary);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 30px; }
+      h2 { font-size: 19px; }
+      main { padding: 40px 20px 80px; }
+      .summary-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+  <div class="glow"></div>
+
+  <header>
+    <div class="inner">
+      <a href="/" class="logo"><span class="logo-dot"></span> UGCio</a>
+      <span class="badge">Privacy Policy</span>
+    </div>
+  </header>
+
+  <main>
+    <h1>Privacy Policy</h1>
+    <p class="effective-date">Effective date: February 20, 2026</p>
+
+    <div class="summary-card">
+      <div class="label">TL;DR</div>
+      <p>UGCio stores all your data locally on your device. We don’t collect personal information, have no user accounts, and don’t send your data to any server. The only external communication is push notification tokens managed by Apple’s push notification service.</p>
+    </div>
+
+    <h2>1. Information We Collect</h2>
+    <p>UGCio is designed with a privacy-first approach. Here’s what we do and don’t collect:</p>
+    <p><strong>Stored locally on your device only:</strong></p>
+    <ul>
+      <li>Profile information (name, username, bio, avatar photo)</li>
+      <li>Portfolio content and images you add</li>
+      <li>Rate cards and deliverable pricing</li>
+      <li>Brand deal tracking and notes</li>
+      <li>Invoices you create</li>
+      <li>Testimonials you add</li>
+      <li>App preferences and notification settings</li>
+    </ul>
+    <p>This data is stored using on-device storage (AsyncStorage) and <strong>never leaves your device</strong>. We cannot access, read, or recover this data.</p>
+
+    <p><strong>Push notification tokens:</strong></p>
+    <ul>
+      <li>If you enable push notifications, Apple’s Push Notification service (APNs) generates a device token to deliver local notifications such as deal reminders and weekly digests.</li>
+      <li>These notifications are scheduled and delivered entirely on-device. We do not operate a push notification server and do not store or transmit your device token to any external service.</li>
+    </ul>
+
+    <h2>2. Information We Don’t Collect</h2>
+    <p>UGCio does <strong>not</strong> collect:</p>
+    <ul>
+      <li>Email addresses, phone numbers, or passwords</li>
+      <li>Location data</li>
+      <li>Usage analytics or behavioral tracking</li>
+      <li>Crash reports or diagnostics</li>
+      <li>Advertising identifiers</li>
+      <li>Any data from third-party services</li>
+    </ul>
+
+    <h2>3. No Accounts or Servers</h2>
+    <p>UGCio does not require you to create an account. There is no login, no registration, and no server-side storage. Your data exists solely on your device.</p>
+
+    <h2>4. Photos and Camera</h2>
+    <p>UGCio requests access to your camera and photo library so you can add content to your portfolio and set a profile photo. Photos you select are stored on-device and are not uploaded to any server.</p>
+
+    <h2>5. Data Retention and Deletion</h2>
+    <p>Since all data is stored locally on your device:</p>
+    <ul>
+      <li>You can delete all app data at any time from Settings → Clear All Data within the app.</li>
+      <li>Uninstalling UGCio removes all stored data permanently.</li>
+      <li>We have no ability to retain or recover your data after deletion.</li>
+    </ul>
+
+    <h2>6. Third-Party Services</h2>
+    <p>UGCio does not integrate with any third-party analytics, advertising, or tracking services. The app uses the following system-level services:</p>
+    <ul>
+      <li><strong>Apple Push Notification service (APNs)</strong> — for on-device notification scheduling only</li>
+      <li><strong>Expo</strong> — build and development framework (no runtime data collection)</li>
+    </ul>
+
+    <h2>7. Children’s Privacy</h2>
+    <p>UGCio is not directed at children under the age of 13. We do not knowingly collect any information from children.</p>
+
+    <h2>8. Changes to This Policy</h2>
+    <p>We may update this privacy policy from time to time. Any changes will be reflected on this page with an updated effective date. We encourage you to review this page periodically.</p>
+
+    <h2>9. Contact Us</h2>
+    <p>If you have any questions about this privacy policy or UGCio’s data practices, contact us at:</p>
+    <p><a href="mailto:support@ugcio.app">support@ugcio.app</a></p>
+  </main>
+
+  <footer>
+    &copy; 2026 UGCio. All rights reserved.
+  </footer>
+</body>
+</html>
