@@ -35,8 +35,6 @@ PODS:
     - Yoga
   - ExpoAsset (12.0.12):
     - ExpoModulesCore
-  - ExpoBlur (15.0.8):
-    - ExpoModulesCore
   - ExpoClipboard (8.0.8):
     - ExpoModulesCore
   - ExpoFileSystem (19.0.21):
@@ -63,8 +61,6 @@ PODS:
     - ExpoModulesCore
   - ExpoLinking (8.0.11):
     - ExpoModulesCore
-  - ExpoLocation (19.0.8):
-    - ExpoModulesCore
   - ExpoModulesCore (3.0.29):
     - hermes-engine
     - RCTRequired
@@ -89,8 +85,6 @@ PODS:
     - ReactNativeDependencies
     - Yoga
   - ExpoSplashScreen (31.0.13):
-    - ExpoModulesCore
-  - ExpoSymbols (1.0.8):
     - ExpoModulesCore
   - ExpoSystemUI (6.0.9):
     - ExpoModulesCore
@@ -1951,77 +1945,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNWorklets (0.5.1):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNWorklets/worklets (= 0.5.1)
-    - Yoga
-  - RNWorklets/worklets (0.5.1):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNWorklets/worklets/apple (= 0.5.1)
-    - Yoga
-  - RNWorklets/worklets/apple (0.5.1):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
   - SDWebImage (5.21.6):
     - SDWebImage/Core (= 5.21.6)
   - SDWebImage/Core (5.21.6)
@@ -2042,7 +1965,6 @@ DEPENDENCIES:
   - EXNotifications (from `../node_modules/expo-notifications/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
-  - ExpoBlur (from `../node_modules/expo-blur/ios`)
   - ExpoClipboard (from `../node_modules/expo-clipboard/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
@@ -2053,10 +1975,8 @@ DEPENDENCIES:
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
-  - ExpoLocation (from `../node_modules/expo-location/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
-  - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
   - ExpoSystemUI (from `../node_modules/expo-system-ui/ios`)
   - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -2131,7 +2051,6 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNWorklets (from `../node_modules/react-native-worklets`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2157,8 +2076,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo"
   ExpoAsset:
     :path: "../node_modules/expo-asset/ios"
-  ExpoBlur:
-    :path: "../node_modules/expo-blur/ios"
   ExpoClipboard:
     :path: "../node_modules/expo-clipboard/ios"
   ExpoFileSystem:
@@ -2179,14 +2096,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-linear-gradient/ios"
   ExpoLinking:
     :path: "../node_modules/expo-linking/ios"
-  ExpoLocation:
-    :path: "../node_modules/expo-location/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
   ExpoSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
-  ExpoSymbols:
-    :path: "../node_modules/expo-symbols/ios"
   ExpoSystemUI:
     :path: "../node_modules/expo-system-ui/ios"
   ExpoWebBrowser:
@@ -2334,8 +2247,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNWorklets:
-    :path: "../node_modules/react-native-worklets"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2346,7 +2257,6 @@ SPEC CHECKSUMS:
   EXNotifications: 9eec98712cc814ceff916d876cb53859003b0597
   Expo: aadbcc8c6c14ff3105a9154f1683cb1424ff0d2a
   ExpoAsset: f867e55ceb428aab99e1e8c082b5aee7c159ea18
-  ExpoBlur: b90747a3f22a8b6ceffd9cb0dc41a4184efdc656
   ExpoClipboard: b36b287d8356887844bb08ed5c84b5979bb4dd1e
   ExpoFileSystem: 858a44267a3e6e9057e0888ad7c7cfbf55d52063
   ExpoFont: f543ce20a228dd702813668b1a07b46f51878d47
@@ -2357,10 +2267,8 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: 55f75eca6499bb9e4231ebad6f3e9cb8f99c0296
   ExpoLinearGradient: 809102bdb979f590083af49f7fa4805cd931bd58
   ExpoLinking: 8f0aaf69aa56f832913030503b6263dc6f647f37
-  ExpoLocation: d5b61cb4970fa982e39ca94246a206a0c3b812ca
   ExpoModulesCore: f3da4f1ab5a8375d0beafab763739dbee8446583
   ExpoSplashScreen: bc3cffefca2716e5f22350ca109badd7e50ec14d
-  ExpoSymbols: 349ee2b4d7d5ff3ea8436467914f8a67635aa354
   ExpoSystemUI: 2ad325f361a2fcd96a464e8574e19935c461c9cc
   ExpoWebBrowser: 17b064c621789e41d4816c95c93f429b84971f52
   FBLazyVector: e95a291ad2dadb88e42b06e0c5fb8262de53ec12
@@ -2437,7 +2345,6 @@ SPEC CHECKSUMS:
   RNGestureHandler: 2914750df066d89bf9d8f48a10ad5f0051108ac3
   RNScreens: d8d6f1792f6e7ac12b0190d33d8d390efc0c1845
   RNSVG: 31d6639663c249b7d5abc9728dde2041eb2a3c34
-  RNWorklets: 76fce72926e28e304afb44f0da23b2d24f2c1fa0
   SDWebImage: 1bb6a1b84b6fe87b972a102bdc77dd589df33477
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c

@@ -24,8 +24,10 @@ import {
   Mail,
   Shield,
   RotateCcw,
+  Crown,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const NOTIFICATION_PREFS_KEY = "notification_preferences";
 
@@ -41,6 +43,7 @@ const DEFAULT_PREFS: NotificationPrefs = {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { isSubscribed, isTrialActive, trialDaysRemaining, price } = useSubscription();
   const [notifPermission, setNotifPermission] = useState<string>("undetermined");
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
 
@@ -145,6 +148,60 @@ export default function SettingsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+      {/* Subscription Section */}
+      <Text style={styles.sectionHeader}>Subscription</Text>
+      <View style={styles.section}>
+        <View style={styles.row}>
+          <View style={styles.rowLeft}>
+            <View style={[styles.iconWrap, { backgroundColor: Colors.primaryLight }]}>
+              <Crown size={16} color={Colors.primary} />
+            </View>
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle}>
+                {isSubscribed ? "UGCio Pro" : isTrialActive ? "Free Trial" : "Not Subscribed"}
+              </Text>
+              <Text style={styles.rowSub}>
+                {isSubscribed
+                  ? `Active — ${price}`
+                  : isTrialActive
+                  ? `${trialDaysRemaining} days remaining`
+                  : "Trial expired"}
+              </Text>
+            </View>
+          </View>
+          {isSubscribed ? (
+            <View style={styles.enabledBadge}>
+              <Text style={styles.enabledBadgeText}>Pro</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.enableBtn}
+              onPress={() => router.push("/paywall" as never)}
+            >
+              <Text style={styles.enableBtnText}>Upgrade</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {isSubscribed && (
+          <>
+            <View style={styles.divider} />
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => Linking.openURL("https://apps.apple.com/account/subscriptions")}
+              activeOpacity={0.7}
+            >
+              <View style={styles.rowLeft}>
+                <View style={styles.rowText}>
+                  <Text style={styles.rowTitle}>Manage Subscription</Text>
+                  <Text style={styles.rowSub}>Change or cancel in App Store</Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color={Colors.textTertiary} />
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+
       {/* Notifications Section */}
       <Text style={styles.sectionHeader}>Notifications</Text>
       <View style={styles.section}>
@@ -254,7 +311,7 @@ export default function SettingsScreen() {
 
         <TouchableOpacity
           style={styles.row}
-          onPress={() => Linking.openURL("https://ugcio.app/privacy")}
+          onPress={() => Linking.openURL("https://texas0418.github.io/UGCio-App/privacy/")}
           activeOpacity={0.7}
         >
           <View style={styles.rowLeft}>

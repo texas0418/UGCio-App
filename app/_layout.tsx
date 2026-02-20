@@ -6,6 +6,7 @@ import React, { useEffect } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CreatorProvider } from "@/contexts/CreatorContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import Colors from "@/constants/colors";
 
 import { initNotifications } from "@/utils/notifications";
@@ -76,6 +77,14 @@ function RootLayoutNav() {
           headerTintColor: Colors.text,
         }}
       />
+      <Stack.Screen
+        name="paywall"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+          presentation: "modal",
+        }}
+      />
     </Stack>
   );
 }
@@ -106,7 +115,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView>
         <CreatorProvider>
-          <RootLayoutNav />
+          <SubscriptionProvider>
+            <RootLayoutNav />
+          </SubscriptionProvider>
         </CreatorProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

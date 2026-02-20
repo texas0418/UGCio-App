@@ -47,12 +47,6 @@
     </dict>
     <key>NSCameraUsageDescription</key>
     <string>UGCio needs camera access to capture content for your portfolio.</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your location</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your location</string>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your location</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSPhotoLibraryAddUsageDescription</key>

@@ -32,6 +32,7 @@ import {
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useCreator } from "@/contexts/CreatorContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { NICHE_CATEGORIES, SOCIAL_PLATFORMS } from "@/mocks/categories";
 import { SocialLink, Testimonial, AvailabilityStatus } from "@/types";
 
@@ -51,10 +52,12 @@ const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; icon: Re
 ];
 
 let _hasRedirectedToOnboarding = false;
+let _hasRedirectedToPaywall = false;
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { profile, updateProfile, testimonials, addTestimonial, removeTestimonial, hasOnboarded, isLoading } = useCreator();
+  const { isSubscribed, isTrialActive, trialExpired, trialDaysRemaining, isLoading: subLoading } = useSubscription();
 
   useEffect(() => {
     if (!isLoading && !hasOnboarded && !_hasRedirectedToOnboarding) {
@@ -62,6 +65,14 @@ export default function ProfileScreen() {
       router.replace("/onboarding" as never);
     }
   }, [isLoading, hasOnboarded, router]);
+
+  // Redirect to paywall if trial expired and not subscribed
+  useEffect(() => {
+    if (!isLoading && !subLoading && hasOnboarded && trialExpired && !isSubscribed && !_hasRedirectedToPaywall) {
+      _hasRedirectedToPaywall = true;
+      router.push("/paywall" as never);
+    }
+  }, [isLoading, subLoading, hasOnboarded, trialExpired, isSubscribed, router]);
   const [showNichePicker, setShowNichePicker] = useState(false);
   const [showSocialForm, setShowSocialForm] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
