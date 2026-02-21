@@ -14,7 +14,6 @@ import { useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
   BellOff,
@@ -44,7 +43,6 @@ const DEFAULT_PREFS: NotificationPrefs = {
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { isSubscribed, isTrialActive, trialDaysRemaining, price } = useSubscription();
   const [notifPermission, setNotifPermission] = useState<string>("undetermined");
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
@@ -120,36 +118,45 @@ export default function SettingsScreen() {
   const handleClearData = useCallback(() => {
     Alert.alert(
       "Clear All Data",
-      "This will permanently delete your profile, portfolio, rates, deals, and all other data. This cannot be undone.",
+      "This will permanently delete your profile, portfolio, rates, deals, and all other data. The app will restart. This cannot be undone.",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete Everything",
           style: "destructive",
-          onPress: async () => {
-            try {
-              // Clear all persisted data
-              await AsyncStorage.clear();
-              // Reset the query cache completely
-              queryClient.removeQueries();
-              // Refetch all queries so they return defaults
-              await queryClient.refetchQueries();
-              if (Platform.OS !== "web") {
-                Haptics.notificationAsync(
-                  Haptics.NotificationFeedbackType.Warning
-                );
-              }
-              // Navigate to onboarding — the home screen's module-level
-              // redirect flags won't fire again, so go directly
-              router.replace("/onboarding" as never);
-            } catch (e) {
-              Alert.alert("Error", "Failed to clear data. Please try again.");
-            }
+          onPress: () => {
+            AsyncStorage.getAllKeys()
+              .then((keys) => {
+                if (keys.length > 0) {
+                  return AsyncStorage.multiRemove(keys);
+                }
+              })
+              .then(() => {
+                if (Platform.OS !== "web") {
+                  Haptics.notificationAsync(
+                    Haptics.NotificationFeedbackType.Warning
+                  );
+                }
+                // Reload the JS bundle to fully restart the app
+                const { DevSettings } = require("react-native");
+                if (DevSettings && DevSettings.reload) {
+                  DevSettings.reload();
+                } else {
+                  // Production fallback
+                  Alert.alert(
+                    "Data Cleared",
+                    "Please close and reopen the app to complete the reset."
+                  );
+                }
+              })
+              .catch(() => {
+                Alert.alert("Error", "Failed to clear data. Please try again.");
+              });
           },
         },
       ]
     );
-  }, [queryClient, router]);
+  }, []);
 
   const notificationsEnabled = notifPermission === "granted";
 

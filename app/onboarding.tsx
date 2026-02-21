@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -62,14 +62,9 @@ const STEPS: OnboardingStep[] = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { completeOnboarding, hasOnboarded } = useCreator();
+  const { completeOnboarding } = useCreator();
   const [currentStep, setCurrentStep] = useState(0);
 
-  useEffect(() => {
-    if (hasOnboarded) {
-      router.replace("/(tabs)/(home)" as never);
-    }
-  }, [hasOnboarded]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const iconScale = useRef(new Animated.Value(1)).current;
