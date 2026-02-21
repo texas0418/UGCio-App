@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
@@ -520,7 +521,19 @@ export default function ProfileScreen() {
             const config = PLATFORM_CONFIG[link.platform] ?? { icon: Link2, color: Colors.textSecondary, bg: Colors.surfaceElevated };
             const IconComp = config.icon;
             return (
-              <View key={link.id} style={styles.socialCard}>
+              <TouchableOpacity
+                key={link.id}
+                style={styles.socialCard}
+                onPress={() => {
+                  if (link.url) {
+                    Linking.openURL(link.url).catch(() => {
+                      Alert.alert("Error", "Could not open this link.");
+                    });
+                  }
+                }}
+                onLongPress={() => removeSocialLink(link.id)}
+                activeOpacity={0.7}
+              >
                 <TouchableOpacity
                   onPress={() => removeSocialLink(link.id)}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -535,7 +548,7 @@ export default function ProfileScreen() {
                 <Text style={styles.socialUrl} numberOfLines={1}>
                   {link.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                 </Text>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
