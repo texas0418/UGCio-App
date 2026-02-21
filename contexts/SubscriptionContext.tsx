@@ -1,14 +1,21 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Platform, AppState, AppStateStatus } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// react-native-iap will be used on native, but we need graceful fallback for web
-let IAP: typeof import("react-native-iap") | null = null;
+let useIAP: any = null;
+let initConnection: any = null;
+let endConnection: any = null;
+let getAvailablePurchases: any = null;
+
 if (Platform.OS !== "web") {
   try {
-    IAP = require("react-native-iap");
+    const expoIAP = require("expo-iap");
+    useIAP = expoIAP.useIAP;
+    initConnection = expoIAP.initConnection;
+    endConnection = expoIAP.endConnection;
+    getAvailablePurchases = expoIAP.getAvailablePurchases;
   } catch {
-    // IAP not available (web or missing native module)
+    // expo-iap not available
   }
 }
 
@@ -43,17 +50,32 @@ export function useSubscription() {
   return useContext(SubscriptionContext);
 }
 
-export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+// Inner component that uses the useIAP hook (hooks can only be used in components)
+function SubscriptionManager({ children }: { children: React.ReactNode }) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isTrialActive, setIsTrialActive] = useState(false);
   const [trialDaysRemaining, setTrialDaysRemaining] = useState(TRIAL_DURATION_DAYS);
   const [trialExpired, setTrialExpired] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [price, setPrice] = useState("$9.99/month");
-  const purchaseUpdateSubscription = useRef<any>(null);
-  const purchaseErrorSubscription = useRef<any>(null);
 
-  // Initialize trial on first launch
+  const iap = useIAP
+    ? useIAP({
+        onPurchaseSuccess: async (purchase: any) => {
+          try {
+            const { finishTransaction } = require("expo-iap");
+            await finishTransaction({ purchase, isConsumable: false });
+            setIsSubscribed(true);
+            await AsyncStorage.setItem(SUBSCRIPTION_KEY, "true");
+          } catch {}
+        },
+        onPurchaseError: (_error: any) => {
+          // Purchase error
+        },
+      })
+    : null;
+
+  // Initialize trial
   const initTrial = useCallback(async () => {
     const trialStart = await AsyncStorage.getItem(TRIAL_START_KEY);
     if (!trialStart) {
@@ -80,9 +102,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  // Check subscription via StoreKit
+  // Check subscription status
   const checkSubscription = useCallback(async () => {
-    if (!IAP || Platform.OS === "web") {
+    if (!iap || Platform.OS === "web") {
       await initTrial();
       setIsLoading(false);
       return;
@@ -94,31 +116,36 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         setIsSubscribed(true);
       }
 
-      await IAP.initConnection();
+      // Fetch subscription products to get price
+      if (iap.connected) {
+        await iap.fetchProducts({ skus: [PRODUCT_ID], type: "subs" });
+        if (iap.products && iap.products.length > 0) {
+          const sub = iap.products[0];
+          const displayPrice = sub.displayPrice || sub.localizedPrice || "$9.99";
+          setPrice(`${displayPrice}/month`);
+        }
 
-      // Get available subscriptions to show price (v13 API)
-      const subscriptions = await IAP.getSubscriptions({ skus: [PRODUCT_ID] });
-      if (subscriptions.length > 0) {
-        const sub = subscriptions[0];
-        const localizedPrice = sub.localizedPrice || "$9.99";
-        setPrice(`${localizedPrice}/month`);
-      }
+        // Check available purchases for active subscription
+        const purchases = await getAvailablePurchases();
+        const hasActiveSub = purchases?.some(
+          (p: any) => p.productId === PRODUCT_ID
+        );
 
-      // Check current purchases
-      const availablePurchases = await IAP.getAvailablePurchases();
-      const hasActiveSub = availablePurchases.some(
-        (purchase: any) => purchase.productId === PRODUCT_ID
-      );
-
-      if (hasActiveSub) {
-        setIsSubscribed(true);
-        await AsyncStorage.setItem(SUBSCRIPTION_KEY, "true");
+        if (hasActiveSub) {
+          setIsSubscribed(true);
+          await AsyncStorage.setItem(SUBSCRIPTION_KEY, "true");
+        } else {
+          setIsSubscribed(false);
+          await AsyncStorage.setItem(SUBSCRIPTION_KEY, "false");
+          await initTrial();
+        }
       } else {
-        setIsSubscribed(false);
-        await AsyncStorage.setItem(SUBSCRIPTION_KEY, "false");
-        await initTrial();
+        // Not connected yet, use cached + trial
+        if (cachedSub !== "true") {
+          await initTrial();
+        }
       }
-    } catch (error) {
+    } catch {
       const cachedSub = await AsyncStorage.getItem(SUBSCRIPTION_KEY);
       if (cachedSub !== "true") {
         await initTrial();
@@ -126,31 +153,34 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     } finally {
       setIsLoading(false);
     }
-  }, [initTrial]);
+  }, [iap?.connected, initTrial]);
 
-  // Purchase subscription (v13 API)
+  // Purchase subscription
   const purchaseSubscription = useCallback(async () => {
-    if (!IAP || Platform.OS === "web") return;
-
+    if (!iap) return;
     try {
-      await IAP.requestSubscription({ sku: PRODUCT_ID });
+      await iap.requestPurchase({
+        request: {
+          apple: { sku: PRODUCT_ID },
+          google: { skus: [PRODUCT_ID] },
+        },
+        type: "subs",
+      });
     } catch (error: any) {
       if (error?.code !== "E_USER_CANCELLED") {
         throw error;
       }
     }
-  }, []);
+  }, [iap]);
 
   // Restore purchases
   const restorePurchases = useCallback(async () => {
-    if (!IAP || Platform.OS === "web") return;
-
+    if (!getAvailablePurchases) return;
     try {
-      const purchases = await IAP.getAvailablePurchases();
-      const hasActiveSub = purchases.some(
-        (purchase: any) => purchase.productId === PRODUCT_ID
+      const purchases = await getAvailablePurchases();
+      const hasActiveSub = purchases?.some(
+        (p: any) => p.productId === PRODUCT_ID
       );
-
       if (hasActiveSub) {
         setIsSubscribed(true);
         await AsyncStorage.setItem(SUBSCRIPTION_KEY, "true");
@@ -162,47 +192,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  // Set up purchase listeners (v13 API)
+  // Check on mount and when connected
   useEffect(() => {
-    if (!IAP || Platform.OS === "web") {
-      checkSubscription();
-      return;
-    }
-
-    purchaseUpdateSubscription.current = IAP.purchaseUpdatedListener(
-      async (purchase: any) => {
-        if (purchase.productId === PRODUCT_ID) {
-          try {
-            const receipt = purchase.transactionReceipt;
-            if (receipt) {
-              await IAP!.finishTransaction({ purchase, isConsumable: false });
-              setIsSubscribed(true);
-              await AsyncStorage.setItem(SUBSCRIPTION_KEY, "true");
-            }
-          } catch (error) {
-            // Transaction finish failed
-          }
-        }
-      }
-    );
-
-    purchaseErrorSubscription.current = IAP.purchaseErrorListener(
-      (error: any) => {
-        if (error.code !== "E_USER_CANCELLED") {
-          // Purchase error occurred
-        }
-      }
-    );
-
     checkSubscription();
-
-    return () => {
-      purchaseUpdateSubscription.current?.remove();
-      purchaseErrorSubscription.current?.remove();
-      if (IAP) {
-        IAP.endConnection();
-      }
-    };
   }, [checkSubscription]);
 
   // Re-check when app foregrounds
@@ -212,9 +204,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         checkSubscription();
       }
     };
-
-    const subscription = AppState.addEventListener("change", handleAppState);
-    return () => subscription.remove();
+    const sub = AppState.addEventListener("change", handleAppState);
+    return () => sub.remove();
   }, [checkSubscription]);
 
   return (
@@ -233,4 +224,60 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       {children}
     </SubscriptionContext.Provider>
   );
+}
+
+// Fallback for web where useIAP isn't available
+function WebSubscriptionManager({ children }: { children: React.ReactNode }) {
+  const [isTrialActive, setIsTrialActive] = useState(false);
+  const [trialDaysRemaining, setTrialDaysRemaining] = useState(TRIAL_DURATION_DAYS);
+  const [trialExpired, setTrialExpired] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const trialStart = await AsyncStorage.getItem(TRIAL_START_KEY);
+      if (!trialStart) {
+        await AsyncStorage.setItem(TRIAL_START_KEY, new Date().toISOString());
+        setIsTrialActive(true);
+        setTrialDaysRemaining(TRIAL_DURATION_DAYS);
+      } else {
+        const startDate = new Date(trialStart);
+        const now = new Date();
+        const diffDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        const remaining = TRIAL_DURATION_DAYS - diffDays;
+        if (remaining > 0) {
+          setIsTrialActive(true);
+          setTrialDaysRemaining(remaining);
+        } else {
+          setTrialExpired(true);
+          setTrialDaysRemaining(0);
+        }
+      }
+      setIsLoading(false);
+    })();
+  }, []);
+
+  return (
+    <SubscriptionContext.Provider
+      value={{
+        isSubscribed: false,
+        isTrialActive,
+        trialDaysRemaining,
+        trialExpired,
+        isLoading,
+        price: "$9.99/month",
+        purchaseSubscription: async () => {},
+        restorePurchases: async () => {},
+      }}
+    >
+      {children}
+    </SubscriptionContext.Provider>
+  );
+}
+
+export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+  if (Platform.OS === "web" || !useIAP) {
+    return <WebSubscriptionManager>{children}</WebSubscriptionManager>;
+  }
+  return <SubscriptionManager>{children}</SubscriptionManager>;
 }
