@@ -198,14 +198,14 @@ export default function RatesScreen() {
           <View style={[styles.statIcon, { backgroundColor: Colors.accentLight }]}>
             <Hash size={16} color={Colors.accent} />
           </View>
-          <Text style={styles.statValue}>{deliverables.length}</Text>
+          <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{deliverables.length}</Text>
           <Text style={styles.statLabel}>Total</Text>
         </View>
         <View style={styles.statCard}>
           <View style={[styles.statIcon, { backgroundColor: Colors.successLight }]}>
             <Zap size={16} color={Colors.success} />
           </View>
-          <Text style={[styles.statValue, { color: Colors.success }]}>
+          <Text style={[styles.statValue, { color: Colors.success }]} numberOfLines={1} adjustsFontSizeToFit>
             {activeCount}
           </Text>
           <Text style={styles.statLabel}>Active</Text>
@@ -214,7 +214,7 @@ export default function RatesScreen() {
           <View style={[styles.statIcon, { backgroundColor: Colors.primaryLight }]}>
             <TrendingUp size={16} color={Colors.primary} />
           </View>
-          <Text style={styles.statValue}>${totalValue}</Text>
+          <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>${totalValue.toLocaleString()}</Text>
           <Text style={styles.statLabel}>Value</Text>
         </View>
       </View>

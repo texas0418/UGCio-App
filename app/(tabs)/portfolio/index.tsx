@@ -9,11 +9,12 @@ import {
   Dimensions,
   TextInput,
   Platform,
+  Modal,
 } from "react-native";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
-import { Plus, X, ImageIcon } from "lucide-react-native";
+import { Plus, X, ImageIcon, Pencil, Trash2, Camera } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useCreator } from "@/contexts/CreatorContext";
 import { NICHE_CATEGORIES } from "@/mocks/categories";
@@ -24,9 +25,10 @@ const GRID_GAP = 2;
 const ITEM_SIZE = (SCREEN_WIDTH - 40 - GRID_GAP * 2) / 3;
 
 export default function PortfolioScreen() {
-  const { portfolio, addPortfolioItem, removePortfolioItem } = useCreator();
+  const { portfolio, addPortfolioItem, removePortfolioItem, updatePortfolioItem } = useCreator();
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
   const [newItem, setNewItem] = useState({
     uri: "",
     category: "",
@@ -44,15 +46,52 @@ export default function PortfolioScreen() {
       ? portfolio
       : portfolio.filter((p) => p.category === selectedCategory);
 
-  const pickMedia = useCallback(async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.9,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setNewItem((prev) => ({ ...prev, uri: result.assets[0].uri }));
+  const pickMedia = useCallback(async (onPick: (uri: string) => void) => {
+    if (Platform.OS === "web") {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.9,
+      });
+      if (!result.canceled && result.assets[0]) {
+        onPick(result.assets[0].uri);
+      }
+      return;
     }
+
+    Alert.alert("Add Image", "Choose a source", [
+      {
+        text: "Take Photo",
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission needed", "Camera access is required to take a photo.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            quality: 0.9,
+          });
+          if (!result.canceled && result.assets[0]) {
+            onPick(result.assets[0].uri);
+          }
+        },
+      },
+      {
+        text: "Choose from Library",
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.9,
+          });
+          if (!result.canceled && result.assets[0]) {
+            onPick(result.assets[0].uri);
+          }
+        },
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
   }, []);
 
   const handleAdd = useCallback(() => {
@@ -83,6 +122,20 @@ export default function PortfolioScreen() {
     }
   }, [newItem, addPortfolioItem]);
 
+  const handleSaveEdit = useCallback(() => {
+    if (!editingItem) return;
+    updatePortfolioItem(editingItem.id, {
+      uri: editingItem.uri,
+      category: editingItem.category,
+      brandName: editingItem.brandName,
+      description: editingItem.description,
+    });
+    setEditingItem(null);
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [editingItem, updatePortfolioItem]);
+
   const confirmRemove = useCallback(
     (id: string) => {
       Alert.alert("Remove Item", "Remove this from your portfolio?", [
@@ -100,6 +153,124 @@ export default function PortfolioScreen() {
       ]);
     },
     [removePortfolioItem]
+  );
+
+  const openItemOptions = useCallback(
+    (item: PortfolioItem) => {
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      Alert.alert(item.brandName || "Portfolio Item", item.description || "What would you like to do?", [
+        {
+          text: "Edit",
+          onPress: () => setEditingItem({ ...item }),
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => confirmRemove(item.id),
+        },
+        { text: "Cancel", style: "cancel" },
+      ]);
+    },
+    [confirmRemove]
+  );
+
+  const renderForm = (
+    title: string,
+    data: { uri: string; category: string; brandName: string; description: string },
+    setData: (updater: (prev: any) => any) => void,
+    onSave: () => void,
+    onClose: () => void,
+    saveLabel: string
+  ) => (
+    <View style={styles.addForm}>
+      <View style={styles.addFormHeader}>
+        <Text style={styles.addFormTitle}>{title}</Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <X size={18} color={Colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity
+        style={styles.mediaPicker}
+        onPress={() => pickMedia((uri) => setData((prev: any) => ({ ...prev, uri })))}
+        activeOpacity={0.8}
+      >
+        {data.uri ? (
+          <Image
+            source={{ uri: data.uri }}
+            style={styles.mediaPreview}
+            contentFit="cover"
+          />
+        ) : (
+          <View style={styles.mediaPlaceholder}>
+            <ImageIcon size={28} color={Colors.textTertiary} />
+            <Text style={styles.mediaPlaceholderText}>Tap to select image</Text>
+          </View>
+        )}
+        {data.uri ? (
+          <View style={styles.changeImageBadge}>
+            <Camera size={12} color={Colors.white} />
+            <Text style={styles.changeImageText}>Change</Text>
+          </View>
+        ) : null}
+      </TouchableOpacity>
+
+      <Text style={styles.fieldLabel}>Category</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryPicker}
+      >
+        {NICHE_CATEGORIES.map((cat) => (
+          <TouchableOpacity
+            key={cat}
+            style={[
+              styles.catChip,
+              data.category === cat && styles.catChipActive,
+            ]}
+            onPress={() => setData((prev: any) => ({ ...prev, category: cat }))}
+          >
+            <Text
+              style={[
+                styles.catChipText,
+                data.category === cat && styles.catChipTextActive,
+              ]}
+            >
+              {cat}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <Text style={styles.fieldLabel}>Brand Name (optional)</Text>
+      <TextInput
+        style={styles.input}
+        value={data.brandName}
+        onChangeText={(t) => setData((prev: any) => ({ ...prev, brandName: t }))}
+        placeholder="e.g. Nike, Glossier..."
+        placeholderTextColor={Colors.textTertiary}
+      />
+
+      <Text style={styles.fieldLabel}>Description (optional)</Text>
+      <TextInput
+        style={[styles.input, styles.descInput]}
+        value={data.description}
+        onChangeText={(t) => setData((prev: any) => ({ ...prev, description: t }))}
+        placeholder="Brief description of this work..."
+        placeholderTextColor={Colors.textTertiary}
+        multiline
+      />
+
+      <TouchableOpacity
+        style={styles.saveButton}
+        onPress={onSave}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.saveButtonText}>{saveLabel}</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -134,100 +305,15 @@ export default function PortfolioScreen() {
           ))}
         </ScrollView>
 
-        {showAddForm && (
-          <View style={styles.addForm}>
-            <View style={styles.addFormHeader}>
-              <Text style={styles.addFormTitle}>New Work</Text>
-              <TouchableOpacity
-                onPress={() => setShowAddForm(false)}
-                style={styles.closeBtn}
-              >
-                <X size={18} color={Colors.textSecondary} />
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={styles.mediaPicker}
-              onPress={pickMedia}
-              activeOpacity={0.8}
-            >
-              {newItem.uri ? (
-                <Image
-                  source={{ uri: newItem.uri }}
-                  style={styles.mediaPreview}
-                  contentFit="cover"
-                />
-              ) : (
-                <View style={styles.mediaPlaceholder}>
-                  <ImageIcon size={28} color={Colors.textTertiary} />
-                  <Text style={styles.mediaPlaceholderText}>
-                    Tap to select image
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-
-            <Text style={styles.fieldLabel}>Category</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.categoryPicker}
-            >
-              {NICHE_CATEGORIES.map((cat) => (
-                <TouchableOpacity
-                  key={cat}
-                  style={[
-                    styles.catChip,
-                    newItem.category === cat && styles.catChipActive,
-                  ]}
-                  onPress={() =>
-                    setNewItem((prev) => ({ ...prev, category: cat }))
-                  }
-                >
-                  <Text
-                    style={[
-                      styles.catChipText,
-                      newItem.category === cat && styles.catChipTextActive,
-                    ]}
-                  >
-                    {cat}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <Text style={styles.fieldLabel}>Brand Name (optional)</Text>
-            <TextInput
-              style={styles.input}
-              value={newItem.brandName}
-              onChangeText={(t) =>
-                setNewItem((prev) => ({ ...prev, brandName: t }))
-              }
-              placeholder="e.g. Nike, Glossier..."
-              placeholderTextColor={Colors.textTertiary}
-            />
-
-            <Text style={styles.fieldLabel}>Description (optional)</Text>
-            <TextInput
-              style={[styles.input, styles.descInput]}
-              value={newItem.description}
-              onChangeText={(t) =>
-                setNewItem((prev) => ({ ...prev, description: t }))
-              }
-              placeholder="Brief description of this work..."
-              placeholderTextColor={Colors.textTertiary}
-              multiline
-            />
-
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleAdd}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.saveButtonText}>Add to Portfolio</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {showAddForm &&
+          renderForm(
+            "New Work",
+            newItem,
+            setNewItem,
+            handleAdd,
+            () => setShowAddForm(false),
+            "Add to Portfolio"
+          )}
 
         {filtered.length > 0 ? (
           <View style={styles.grid}>
@@ -235,8 +321,9 @@ export default function PortfolioScreen() {
               <TouchableOpacity
                 key={item.id}
                 style={styles.gridItem}
-                onLongPress={() => confirmRemove(item.id)}
-                activeOpacity={0.9}
+                onPress={() => openItemOptions(item)}
+                onLongPress={() => openItemOptions(item)}
+                activeOpacity={0.85}
               >
                 <Image
                   source={{ uri: item.uri }}
@@ -250,6 +337,9 @@ export default function PortfolioScreen() {
                     </Text>
                   </View>
                 )}
+                <View style={styles.editIndicator}>
+                  <Pencil size={10} color={Colors.white} />
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -278,6 +368,36 @@ export default function PortfolioScreen() {
           <Plus size={22} color={Colors.white} />
         </TouchableOpacity>
       )}
+
+      {/* Edit Modal */}
+      <Modal
+        visible={!!editingItem}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setEditingItem(null)}
+      >
+        <View style={styles.modalContainer}>
+          <ScrollView
+            contentContainerStyle={styles.modalContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {editingItem &&
+              renderForm(
+                "Edit Work",
+                {
+                  uri: editingItem.uri,
+                  category: editingItem.category,
+                  brandName: editingItem.brandName || "",
+                  description: editingItem.description || "",
+                },
+                (updater) => setEditingItem((prev) => prev ? { ...prev, ...updater(prev) } : null),
+                handleSaveEdit,
+                () => setEditingItem(null),
+                "Save Changes"
+              )}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -347,6 +467,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     marginBottom: 16,
+    position: "relative",
   },
   mediaPreview: {
     width: "100%",
@@ -367,6 +488,23 @@ const styles = StyleSheet.create({
   mediaPlaceholderText: {
     fontSize: 14,
     color: Colors.textTertiary,
+  },
+  changeImageBadge: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  changeImageText: {
+    fontSize: 12,
+    color: Colors.white,
+    fontWeight: "600" as const,
   },
   fieldLabel: {
     fontSize: 12,
@@ -456,6 +594,17 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: "600" as const,
   },
+  editIndicator: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
@@ -497,5 +646,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  modalContent: {
+    padding: 20,
+    paddingTop: Platform.OS === "ios" ? 20 : 20,
   },
 });

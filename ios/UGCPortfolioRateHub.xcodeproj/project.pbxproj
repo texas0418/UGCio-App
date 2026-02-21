@@ -7,29 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		046263E8371F4EE676A0C3A2 /* libPods-UGCPortfolioRateHub.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3235FE6C7B65C8FEC42BCC5B /* libPods-UGCPortfolioRateHub.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		2ADD7A1088779EE9845EEE1C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6CE1C124B54603240F8572C9 /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		6E8C1EF1D15186A775F9D168 /* libPods-UGCPortfolioRateHub.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AE7912CA717AB2552D583A96 /* libPods-UGCPortfolioRateHub.a */; };
-		9810A2EDF2B4A158DE591464 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42BF45C6D37C0A4EB7ADF745 /* ExpoModulesProvider.swift */; };
-		A5BE9243830FCA3CEC6652D4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0CF83CE74F3076A7E7177829 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		BF7CBB331C2FBC31558F2003 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9FB109426D2C6CBBF723D1 /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0CF83CE74F3076A7E7177829 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = UGCPortfolioRateHub/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* UGCPortfolioRateHub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UGCPortfolioRateHub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = UGCPortfolioRateHub/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = UGCPortfolioRateHub/Info.plist; sourceTree = "<group>"; };
-		42BF45C6D37C0A4EB7ADF745 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-UGCPortfolioRateHub/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		5CE6C1643C25AF7E249B3A83 /* Pods-UGCPortfolioRateHub.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UGCPortfolioRateHub.release.xcconfig"; path = "Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub.release.xcconfig"; sourceTree = "<group>"; };
+		19E1F359AA1F767FAAC4E3D5 /* Pods-UGCPortfolioRateHub.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UGCPortfolioRateHub.release.xcconfig"; path = "Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub.release.xcconfig"; sourceTree = "<group>"; };
+		3235FE6C7B65C8FEC42BCC5B /* libPods-UGCPortfolioRateHub.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-UGCPortfolioRateHub.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E9E60F17DD39503148D4507 /* Pods-UGCPortfolioRateHub.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UGCPortfolioRateHub.debug.xcconfig"; path = "Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub.debug.xcconfig"; sourceTree = "<group>"; };
+		6CE1C124B54603240F8572C9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = UGCPortfolioRateHub/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = UGCPortfolioRateHub/SplashScreen.storyboard; sourceTree = "<group>"; };
-		AE7912CA717AB2552D583A96 /* libPods-UGCPortfolioRateHub.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-UGCPortfolioRateHub.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		EF9FB109426D2C6CBBF723D1 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-UGCPortfolioRateHub/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = UGCPortfolioRateHub/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* UGCPortfolioRateHub-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "UGCPortfolioRateHub-Bridging-Header.h"; path = "UGCPortfolioRateHub/UGCPortfolioRateHub-Bridging-Header.h"; sourceTree = "<group>"; };
-		F12324B5EDBE9BDC76EEAE3C /* Pods-UGCPortfolioRateHub.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UGCPortfolioRateHub.debug.xcconfig"; path = "Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6E8C1EF1D15186A775F9D168 /* libPods-UGCPortfolioRateHub.a in Frameworks */,
+				046263E8371F4EE676A0C3A2 /* libPods-UGCPortfolioRateHub.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,26 +53,35 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				0CF83CE74F3076A7E7177829 /* PrivacyInfo.xcprivacy */,
+				6CE1C124B54603240F8572C9 /* PrivacyInfo.xcprivacy */,
 			);
 			name = UGCPortfolioRateHub;
+			sourceTree = "<group>";
+		};
+		2CD766A30961D2C1A578B4B9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				4E9E60F17DD39503148D4507 /* Pods-UGCPortfolioRateHub.debug.xcconfig */,
+				19E1F359AA1F767FAAC4E3D5 /* Pods-UGCPortfolioRateHub.release.xcconfig */,
+			);
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				AE7912CA717AB2552D583A96 /* libPods-UGCPortfolioRateHub.a */,
+				3235FE6C7B65C8FEC42BCC5B /* libPods-UGCPortfolioRateHub.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		59AC4776C4BCD3FD3F6CB39C /* UGCPortfolioRateHub */ = {
+		3DDF5D2E79AA7450EF40D698 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				42BF45C6D37C0A4EB7ADF745 /* ExpoModulesProvider.swift */,
+				A7B4D20FD35111656C4E9757 /* UGCPortfolioRateHub */,
 			);
-			name = UGCPortfolioRateHub;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -89,8 +98,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				C5B9394800E0B61EF0893445 /* Pods */,
-				F4E159D7B379E2374A452B7F /* ExpoModulesProviders */,
+				2CD766A30961D2C1A578B4B9 /* Pods */,
+				3DDF5D2E79AA7450EF40D698 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,6 +114,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		A7B4D20FD35111656C4E9757 /* UGCPortfolioRateHub */ = {
+			isa = PBXGroup;
+			children = (
+				EF9FB109426D2C6CBBF723D1 /* ExpoModulesProvider.swift */,
+			);
+			name = UGCPortfolioRateHub;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -112,24 +129,6 @@
 			);
 			name = Supporting;
 			path = UGCPortfolioRateHub/Supporting;
-			sourceTree = "<group>";
-		};
-		C5B9394800E0B61EF0893445 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				F12324B5EDBE9BDC76EEAE3C /* Pods-UGCPortfolioRateHub.debug.xcconfig */,
-				5CE6C1643C25AF7E249B3A83 /* Pods-UGCPortfolioRateHub.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		F4E159D7B379E2374A452B7F /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				59AC4776C4BCD3FD3F6CB39C /* UGCPortfolioRateHub */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +139,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "UGCPortfolioRateHub" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				EC997C3E9A55DC4DFE105D64 /* [Expo] Configure project */,
+				D521364F2F4DAA857F039ABC /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				CDC18C1D078BAF93FE8BDC29 /* [CP] Embed Pods Frameworks */,
+				56089FDC08014338B15C9EDD /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +195,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				A5BE9243830FCA3CEC6652D4 /* PrivacyInfo.xcprivacy in Resources */,
+				2ADD7A1088779EE9845EEE1C /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,6 +241,28 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		56089FDC08014338B15C9EDD /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -280,29 +301,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CDC18C1D078BAF93FE8BDC29 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-UGCPortfolioRateHub/Pods-UGCPortfolioRateHub-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		EC997C3E9A55DC4DFE105D64 /* [Expo] Configure project */ = {
+		D521364F2F4DAA857F039ABC /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -334,7 +333,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				9810A2EDF2B4A158DE591464 /* ExpoModulesProvider.swift in Sources */,
+				BF7CBB331C2FBC31558F2003 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,12 +342,13 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F12324B5EDBE9BDC76EEAE3C /* Pods-UGCPortfolioRateHub.debug.xcconfig */;
+			baseConfigurationReference = 4E9E60F17DD39503148D4507 /* Pods-UGCPortfolioRateHub.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = UGCPortfolioRateHub/UGCPortfolioRateHub.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 75ULC33H2C;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -379,12 +379,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5CE6C1643C25AF7E249B3A83 /* Pods-UGCPortfolioRateHub.release.xcconfig */;
+			baseConfigurationReference = 19E1F359AA1F767FAAC4E3D5 /* Pods-UGCPortfolioRateHub.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = UGCPortfolioRateHub/UGCPortfolioRateHub.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 75ULC33H2C;
 				INFOPLIST_FILE = UGCPortfolioRateHub/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (

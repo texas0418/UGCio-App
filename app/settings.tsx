@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
   BellOff,
@@ -43,6 +44,7 @@ const DEFAULT_PREFS: NotificationPrefs = {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { isSubscribed, isTrialActive, trialDaysRemaining, price } = useSubscription();
   const [notifPermission, setNotifPermission] = useState<string>("undetermined");
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
@@ -125,20 +127,24 @@ export default function SettingsScreen() {
           text: "Delete Everything",
           style: "destructive",
           onPress: async () => {
-            await AsyncStorage.clear();
-            if (Platform.OS !== "web") {
-              Haptics.notificationAsync(
-                Haptics.NotificationFeedbackType.Warning
-              );
+            try {
+              await AsyncStorage.clear();
+              queryClient.clear();
+              await queryClient.invalidateQueries();
+              if (Platform.OS !== "web") {
+                Haptics.notificationAsync(
+                  Haptics.NotificationFeedbackType.Warning
+                );
+              }
+              router.replace("/");
+            } catch (e) {
+              Alert.alert("Error", "Failed to clear data. Please try again.");
             }
-            Alert.alert("Data Cleared", "All app data has been deleted. The app will restart fresh.", [
-              { text: "OK" },
-            ]);
           },
         },
       ]
     );
-  }, []);
+  }, [queryClient, router]);
 
   const notificationsEnabled = notifPermission === "granted";
 

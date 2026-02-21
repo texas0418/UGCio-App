@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { User, Images, DollarSign, Send, Briefcase } from "lucide-react-native";
+import { User, Images, DollarSign, Send, Briefcase, CalendarDays } from "lucide-react-native";
 import React from "react";
 import Colors from "@/constants/colors";
 
@@ -53,6 +53,15 @@ export default function TabLayout() {
           title: "Deals",
           tabBarIcon: ({ color, size }) => (
             <Briefcase size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: "Calendar",
+          tabBarIcon: ({ color, size }) => (
+            <CalendarDays size={size} color={color} />
           ),
         }}
       />

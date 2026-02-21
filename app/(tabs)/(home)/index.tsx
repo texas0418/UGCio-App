@@ -29,6 +29,7 @@ import {
   Star,
   Quote,
   Trash2,
+  Calendar,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useCreator } from "@/contexts/CreatorContext";
@@ -76,23 +77,70 @@ export default function ProfileScreen() {
   const [showNichePicker, setShowNichePicker] = useState(false);
   const [showSocialForm, setShowSocialForm] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [bookedDate, setBoostedDate] = useState<Date>(() => {
+    if (profile.bookedUntil) {
+      const parsed = new Date(profile.bookedUntil);
+      return isNaN(parsed.getTime()) ? new Date() : parsed;
+    }
+    return new Date();
+  });
   const [newSocialPlatform, setNewSocialPlatform] = useState("");
   const [newSocialUrl, setNewSocialUrl] = useState("");
   const [newTestimonial, setNewTestimonial] = useState({ brandName: "", content: "", rating: 5 });
 
   const pickAvatar = useCallback(async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets[0]) {
-      updateProfile({ avatarUrl: result.assets[0].uri });
-      if (Platform.OS !== "web") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS === "web") {
+      // Web: just use library
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets[0]) {
+        updateProfile({ avatarUrl: result.assets[0].uri });
       }
+      return;
     }
+
+    Alert.alert("Add Headshot", "Choose a photo source", [
+      {
+        text: "Take Photo",
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission needed", "Camera access is required to take a photo.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+          });
+          if (!result.canceled && result.assets[0]) {
+            updateProfile({ avatarUrl: result.assets[0].uri });
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        },
+      },
+      {
+        text: "Choose from Library",
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+          });
+          if (!result.canceled && result.assets[0]) {
+            updateProfile({ avatarUrl: result.assets[0].uri });
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        },
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
   }, [updateProfile]);
 
   const toggleNiche = useCallback(
@@ -109,15 +157,53 @@ export default function ProfileScreen() {
     [profile.niches, updateProfile]
   );
 
+  const PLATFORM_URL_PREFIX: Record<string, string> = {
+    Instagram: "https://instagram.com/",
+    TikTok: "https://tiktok.com/@",
+    YouTube: "https://youtube.com/@",
+    "Twitter/X": "https://x.com/",
+    LinkedIn: "https://linkedin.com/in/",
+    Website: "",
+  };
+
+  const getSocialPlaceholder = (platform: string): string => {
+    switch (platform) {
+      case "Instagram": return "@username or full URL";
+      case "TikTok": return "@username or full URL";
+      case "YouTube": return "@channel or full URL";
+      case "Twitter/X": return "@handle or full URL";
+      case "LinkedIn": return "username or full URL";
+      case "Website": return "https://yourwebsite.com";
+      default: return "@handle or https://...";
+    }
+  };
+
+  const formatSocialUrl = (platform: string, input: string): string => {
+    const trimmed = input.trim();
+    // Already a full URL
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
+    }
+    // Website must be a URL
+    if (platform === "Website") {
+      return trimmed.startsWith("www.") ? `https://${trimmed}` : `https://${trimmed}`;
+    }
+    // Strip @ if present
+    const handle = trimmed.startsWith("@") ? trimmed.slice(1) : trimmed;
+    const prefix = PLATFORM_URL_PREFIX[platform] || "";
+    return `${prefix}${handle}`;
+  };
+
   const addSocialLink = useCallback(() => {
-    if (!newSocialPlatform || !newSocialUrl) {
-      Alert.alert("Missing Info", "Please select a platform and enter a URL.");
+    if (!newSocialPlatform || !newSocialUrl.trim()) {
+      Alert.alert("Missing Info", "Please select a platform and enter a handle or URL.");
       return;
     }
+    const url = formatSocialUrl(newSocialPlatform, newSocialUrl);
     const link: SocialLink = {
       id: Date.now().toString(),
       platform: newSocialPlatform,
-      url: newSocialUrl,
+      url,
     };
     updateProfile({ socialLinks: [...profile.socialLinks, link] });
     setNewSocialPlatform("");
@@ -245,7 +331,7 @@ export default function ProfileScreen() {
                 onPress={() => setAvailability(opt.value)}
                 activeOpacity={0.7}
               >
-                <IconComp size={14} color={isActive ? opt.color : Colors.textTertiary} />
+                <IconComp size={12} color={isActive ? opt.color : Colors.textTertiary} />
                 <Text
                   style={[
                     styles.availabilityText,
@@ -259,15 +345,62 @@ export default function ProfileScreen() {
           })}
         </View>
         {profile.availability === "booked" && (
-          <View style={styles.bookedDateRow}>
+          <View style={styles.bookedDateSection}>
             <Text style={styles.bookedLabel}>Booked until</Text>
-            <TextInput
-              style={styles.bookedInput}
-              value={profile.bookedUntil ?? ""}
-              onChangeText={(text) => updateProfile({ bookedUntil: text })}
-              placeholder="e.g. March 15"
-              placeholderTextColor={Colors.textTertiary}
-            />
+            <TouchableOpacity
+              style={styles.bookedDateButton}
+              onPress={() => setShowDatePicker(!showDatePicker)}
+              activeOpacity={0.7}
+            >
+              <Calendar size={16} color={Colors.textSecondary} />
+              <Text style={[
+                styles.bookedDateText,
+                !profile.bookedUntil && { color: Colors.textTertiary },
+              ]}>
+                {profile.bookedUntil || "Select a date"}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <View style={styles.datePickerWrap}>
+                {Platform.OS === "ios" || Platform.OS === "android" ? (
+                  (() => {
+                    const DateTimePicker = require("@react-native-community/datetimepicker").default;
+                    return (
+                      <DateTimePicker
+                        value={bookedDate}
+                        mode="date"
+                        display={Platform.OS === "ios" ? "inline" : "default"}
+                        minimumDate={new Date()}
+                        themeVariant="dark"
+                        accentColor={Colors.primary}
+                        onChange={(_event: any, selectedDate?: Date) => {
+                          if (Platform.OS === "android") {
+                            setShowDatePicker(false);
+                          }
+                          if (selectedDate) {
+                            setBoostedDate(selectedDate);
+                            const formatted = selectedDate.toLocaleDateString("en-US", {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                            });
+                            updateProfile({ bookedUntil: formatted });
+                          }
+                        }}
+                      />
+                    );
+                  })()
+                ) : null}
+                {Platform.OS === "ios" && (
+                  <TouchableOpacity
+                    style={styles.datePickerDone}
+                    onPress={() => setShowDatePicker(false)}
+                  >
+                    <Text style={styles.datePickerDoneText}>Done</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -444,10 +577,11 @@ export default function ProfileScreen() {
               style={styles.input}
               value={newSocialUrl}
               onChangeText={setNewSocialUrl}
-              placeholder="https://..."
+              placeholder={getSocialPlaceholder(newSocialPlatform)}
               placeholderTextColor={Colors.textTertiary}
               autoCapitalize="none"
-              keyboardType="url"
+              autoCorrect={false}
+              keyboardType={newSocialPlatform === "Website" ? "url" : "default"}
             />
             <TouchableOpacity
               style={styles.addButton}
@@ -712,15 +846,16 @@ const styles = StyleSheet.create({
   },
   availabilityRow: {
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
   },
   availabilityChip: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    paddingVertical: 12,
+    gap: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
     borderRadius: 12,
     backgroundColor: Colors.surface,
     borderWidth: 1,
@@ -730,16 +865,50 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textSecondary,
     fontWeight: "500" as const,
+    flexShrink: 1,
+    textAlign: "center",
   },
-  bookedDateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
+  bookedDateSection: {
     marginTop: 10,
   },
   bookedLabel: {
     fontSize: 13,
     color: Colors.textSecondary,
+    marginBottom: 8,
+  },
+  bookedDateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  bookedDateText: {
+    fontSize: 14,
+    color: Colors.text,
+    fontWeight: "500" as const,
+  },
+  datePickerWrap: {
+    marginTop: 10,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: "hidden",
+  },
+  datePickerDone: {
+    alignItems: "center",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  datePickerDoneText: {
+    fontSize: 15,
+    fontWeight: "600" as const,
+    color: Colors.primary,
   },
   bookedInput: {
     flex: 1,
