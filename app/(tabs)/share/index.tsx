@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo } from "react";
+import React, { useRef, useCallback, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Alert,
   Animated,
   Platform,
+  ActivityIndicator,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
@@ -32,7 +34,10 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  Upload,
+  ExternalLink,
 } from "lucide-react-native";
+import { publishProfile } from "@/services/publishService";
 import Colors from "@/constants/colors";
 import { useCreator } from "@/contexts/CreatorContext";
 import { AvailabilityStatus } from "@/types";
@@ -54,6 +59,52 @@ export default function ShareScreen() {
   const router = useRouter();
   const { profile, portfolio, deliverables, analytics, testimonials, incrementAnalytic } = useCreator();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishStatus, setPublishStatus] = useState<string>("");
+
+  const handlePublish = useCallback(async () => {
+    if (isPublishing) return;
+
+    if (!profile.username) {
+      Alert.alert("Username Required", "Please set a username in your profile before publishing.");
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishStatus("Starting...");
+
+    try {
+      const result = await publishProfile(
+        profile,
+        portfolio,
+        deliverables,
+        testimonials,
+        (step) => setPublishStatus(step)
+      );
+
+      if (result.success) {
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        Alert.alert(
+          "Published!",
+          `Your profile is live at ${result.url}`,
+          [
+            { text: "Copy Link", onPress: () => Clipboard.setStringAsync(result.url) },
+            { text: "Open", onPress: () => Linking.openURL(result.url) },
+            { text: "OK" },
+          ]
+        );
+      } else {
+        Alert.alert("Publish Failed", result.error || "Something went wrong. Please try again.");
+      }
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Something went wrong.");
+    } finally {
+      setIsPublishing(false);
+      setPublishStatus("");
+    }
+  }, [isPublishing, profile, portfolio, deliverables, testimonials]);
 
   const shareUrl = useMemo(
     () =>
@@ -215,6 +266,32 @@ export default function ShareScreen() {
           </TouchableOpacity>
         </View>
       </Animated.View>
+
+      <TouchableOpacity
+        style={[styles.publishBtn, isPublishing && styles.publishBtnDisabled]}
+        onPress={handlePublish}
+        activeOpacity={0.8}
+        disabled={isPublishing}
+      >
+        {isPublishing ? (
+          <>
+            <ActivityIndicator size="small" color={Colors.white} />
+            <View style={styles.publishInfo}>
+              <Text style={styles.publishTitle}>Publishing...</Text>
+              <Text style={styles.publishSub}>{publishStatus}</Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <Upload size={18} color={Colors.white} />
+            <View style={styles.publishInfo}>
+              <Text style={styles.publishTitle}>Publish to Website</Text>
+              <Text style={styles.publishSub}>Go live at ugcio.app/{profile.username || "yourname"}</Text>
+            </View>
+            <ExternalLink size={16} color={Colors.textTertiary} />
+          </>
+        )}
+      </TouchableOpacity>
 
       <View style={styles.analyticsSection}>
         <View style={styles.analyticsSectionHeader}>
@@ -588,6 +665,31 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.textTertiary,
     fontWeight: "500" as const,
+  },
+  publishBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: Colors.primary,
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 20,
+  },
+  publishBtnDisabled: {
+    opacity: 0.7,
+  },
+  publishInfo: {
+    flex: 1,
+  },
+  publishTitle: {
+    fontSize: 15,
+    fontWeight: "700" as const,
+    color: Colors.white,
+  },
+  publishSub: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.7)",
+    marginTop: 1,
   },
   mediaKitBtn: {
     flexDirection: "row",
