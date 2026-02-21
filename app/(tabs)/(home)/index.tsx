@@ -439,6 +439,21 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Contact Email</Text>
+        <TextInput
+          style={styles.input}
+          value={profile.contactEmail}
+          onChangeText={(text) => updateProfile({ contactEmail: text })}
+          placeholder="your@email.com"
+          placeholderTextColor={Colors.textTertiary}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          testID="email-input"
+        />
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionLabel}>Bio</Text>
         <TextInput
           style={[styles.input, styles.bioInput]}

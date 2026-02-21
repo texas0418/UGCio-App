@@ -9,11 +9,11 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import * as Notifications from "expo-notifications";
-import { Send } from "lucide-react-native";
+import { Send, Mail } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useCreator } from "@/contexts/CreatorContext";
 
@@ -27,7 +27,7 @@ export default function InquiryScreen() {
     budget: "",
   });
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!form.brandName || !form.email || !form.message) {
       Alert.alert(
         "Missing Fields",
@@ -36,23 +36,51 @@ export default function InquiryScreen() {
       return;
     }
 
-    if (Platform.OS !== "web") {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Notifications.scheduleNotificationAsync({
-        content: {
-          title: "New Brand Inquiry!",
-          body: `${form.brandName} wants to work with you${form.budget ? ` (Budget: ${form.budget})` : ""}.`,
-          data: { brandName: form.brandName, email: form.email },
-        },
-        trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 2 },
-      }).catch(() => {});
+    if (!profile.contactEmail) {
+      Alert.alert(
+        "No Contact Email",
+        "The creator hasn't set up their contact email yet."
+      );
+      return;
     }
-    Alert.alert(
-      "Inquiry Sent!",
-      `Thanks ${form.brandName}! ${profile.name || "The creator"} will get back to you soon.`,
-      [{ text: "Done", onPress: () => router.back() }]
+
+    // Build the mailto URL
+    const subject = encodeURIComponent(
+      `UGCio Inquiry from ${form.brandName}`
     );
-  }, [form, profile.name, router]);
+    const body = encodeURIComponent(
+      `Hi ${profile.name || "there"},\n\n` +
+      `I'm ${form.brandName} and I'd love to work with you!\n\n` +
+      `${form.budget ? `Budget: ${form.budget}\n\n` : ""}` +
+      `${form.message}\n\n` +
+      `---\n` +
+      `From: ${form.brandName}\n` +
+      `Email: ${form.email}\n` +
+      `Sent via UGCio`
+    );
+
+    const mailto = `mailto:${profile.contactEmail}?subject=${subject}&body=${body}&cc=${encodeURIComponent(form.email)}`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(mailto);
+      if (canOpen) {
+        await Linking.openURL(mailto);
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } else {
+        Alert.alert(
+          "No Email App",
+          "No email app is available. Please email the creator directly at: " + profile.contactEmail
+        );
+      }
+    } catch {
+      Alert.alert(
+        "Error",
+        "Could not open email. You can reach the creator at: " + profile.contactEmail
+      );
+    }
+  }, [form, profile.name, profile.contactEmail]);
 
   return (
     <KeyboardAvoidingView
@@ -67,7 +95,7 @@ export default function InquiryScreen() {
           Work with {profile.name || "this creator"}
         </Text>
         <Text style={styles.subheading}>
-          Fill out the form below and they'll get back to you.
+          Fill out the form and we'll open an email ready to send.
         </Text>
 
         <View style={styles.field}>
@@ -83,7 +111,7 @@ export default function InquiryScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>Your Email</Text>
           <TextInput
             style={styles.input}
             value={form.email}
@@ -128,9 +156,13 @@ export default function InquiryScreen() {
           activeOpacity={0.85}
           testID="inquiry-submit-btn"
         >
-          <Send size={16} color={Colors.white} />
-          <Text style={styles.submitText}>Send Inquiry</Text>
+          <Mail size={16} color={Colors.white} />
+          <Text style={styles.submitText}>Open Email</Text>
         </TouchableOpacity>
+
+        <Text style={styles.footnote}>
+          This will open your email app with a pre-filled message to {profile.name || "the creator"}.
+        </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -194,5 +226,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700" as const,
     color: Colors.white,
+  },
+  footnote: {
+    fontSize: 13,
+    color: Colors.textTertiary,
+    textAlign: "center",
+    marginTop: 16,
+    lineHeight: 18,
   },
 });

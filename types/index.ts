@@ -3,6 +3,7 @@ export interface CreatorProfile {
   username: string;
   bio: string;
   avatarUrl: string;
+  contactEmail: string;
   niches: string[];
   socialLinks: SocialLink[];
   availability: AvailabilityStatus;

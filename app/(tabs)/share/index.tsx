@@ -9,6 +9,7 @@ import {
   Animated,
   Platform,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import * as Clipboard from "expo-clipboard";
@@ -50,6 +51,7 @@ const AVAILABILITY_DISPLAY: Record<AvailabilityStatus, { label: string; color: s
 };
 
 export default function ShareScreen() {
+  const router = useRouter();
   const { profile, portfolio, deliverables, analytics, testimonials, incrementAnalytic } = useCreator();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -430,7 +432,7 @@ export default function ShareScreen() {
           </View>
         )}
 
-        <TouchableOpacity style={styles.ctaButton} activeOpacity={0.85}>
+        <TouchableOpacity style={styles.ctaButton} activeOpacity={0.85} onPress={() => router.push("/inquiry" as never)}>
           <MessageCircle size={18} color={Colors.white} />
           <Text style={styles.ctaButtonText}>Work With Me</Text>
         </TouchableOpacity>

@@ -34,6 +34,7 @@ const DEFAULT_PROFILE: CreatorProfile = {
   username: "",
   bio: "",
   avatarUrl: "",
+  contactEmail: "",
   niches: [],
   socialLinks: [],
   availability: "available",
