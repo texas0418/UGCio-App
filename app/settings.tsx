@@ -128,15 +128,20 @@ export default function SettingsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
+              // Clear all persisted data
               await AsyncStorage.clear();
-              queryClient.clear();
-              await queryClient.invalidateQueries();
+              // Reset the query cache completely
+              queryClient.removeQueries();
+              // Refetch all queries so they return defaults
+              await queryClient.refetchQueries();
               if (Platform.OS !== "web") {
                 Haptics.notificationAsync(
                   Haptics.NotificationFeedbackType.Warning
                 );
               }
-              router.replace("/");
+              // Navigate to onboarding — the home screen's module-level
+              // redirect flags won't fire again, so go directly
+              router.replace("/onboarding" as never);
             } catch (e) {
               Alert.alert("Error", "Failed to clear data. Please try again.");
             }
