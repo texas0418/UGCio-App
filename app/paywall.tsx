@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Platform,
   ScrollView,
+  Linking,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import {
@@ -33,7 +34,8 @@ const FEATURES = [
 ];
 
 export default function PaywallScreen() {
-  const { price, purchaseSubscription, restorePurchases, trialDaysRemaining } = useSubscription();
+  const { price, purchaseSubscription, restorePurchases, trialDaysRemaining } =
+    useSubscription();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
 
@@ -82,7 +84,6 @@ export default function PaywallScreen() {
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.6 }}
       />
-
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -95,7 +96,8 @@ export default function PaywallScreen() {
 
         <Text style={styles.title}>Go Pro with UGCio</Text>
         <Text style={styles.subtitle}>
-          Your free trial has ended. Subscribe to keep using all features and grow your UGC business.
+          Your free trial has ended. Subscribe to keep using all
+          features and grow your UGC business.
         </Text>
 
         <View style={styles.featuresCard}>
@@ -152,8 +154,29 @@ export default function PaywallScreen() {
         </TouchableOpacity>
 
         <Text style={styles.legal}>
-          Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your account settings on the App Store after purchase.
+          Payment will be charged to your Apple ID account at confirmation of
+          purchase. Subscription automatically renews unless it is canceled at
+          least 24 hours before the end of the current period. Your account will
+          be charged for renewal within 24 hours prior to the end of the current
+          period. You can manage and cancel your subscriptions by going to your
+          account settings on the App Store after purchase.
         </Text>
+
+        <View style={styles.legalLinks}>
+          <TouchableOpacity
+            onPress={() => Linking.openURL("https://ugcio.app/terms")}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.legalLink}>Terms of Use</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalDivider}>|</Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL("https://ugcio.app/privacy")}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.legalLink}>Privacy Policy</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -311,5 +334,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 16,
     paddingHorizontal: 8,
+  },
+  legalLinks: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+    gap: 8,
+  },
+  legalLink: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: "500",
+    textDecorationLine: "underline",
+  },
+  legalDivider: {
+    fontSize: 12,
+    color: Colors.textTertiary,
   },
 });
