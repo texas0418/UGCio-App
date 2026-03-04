@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ugcio.app",
-      "buildNumber": "1",
+      "buildNumber": "7",
       "infoPlist": {
         "CFBundleDisplayName": "UGCio",
         "ITSAppUsesNonExemptEncryption": false,
