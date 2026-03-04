@@ -84,13 +84,11 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
       setTrialDaysRemaining(TRIAL_DURATION_DAYS);
       return;
     }
-
     const startDate = new Date(trialStart);
     const now = new Date();
     const diffMs = now.getTime() - startDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const remaining = TRIAL_DURATION_DAYS - diffDays;
-
     if (remaining > 0) {
       setIsTrialActive(true);
       setTrialDaysRemaining(remaining);
@@ -101,6 +99,31 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
       setTrialExpired(true);
     }
   }, []);
+
+  // Ensure IAP connection is established
+  const ensureConnected = useCallback(async () => {
+    if (!iap) return false;
+    if (iap.connected) return true;
+    try {
+      await initConnection();
+      // Give StoreKit a moment to confirm connection
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return true;
+    } catch {
+      return false;
+    }
+  }, [iap]);
+
+  // Fetch products and return them
+  const fetchProducts = useCallback(async (): Promise<any[]> => {
+    if (!iap) return [];
+    try {
+      await iap.fetchProducts({ skus: [PRODUCT_ID], type: "subs" });
+      return iap.products ?? [];
+    } catch {
+      return [];
+    }
+  }, [iap]);
 
   // Check subscription status
   const checkSubscription = useCallback(async () => {
@@ -116,34 +139,36 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
         setIsSubscribed(true);
       }
 
-      // Fetch subscription products to get price
-      if (iap.connected) {
-        await iap.fetchProducts({ skus: [PRODUCT_ID], type: "subs" });
-        if (iap.products && iap.products.length > 0) {
-          const sub = iap.products[0];
-          const displayPrice = sub.displayPrice || sub.localizedPrice || "$9.99";
-          setPrice(`${displayPrice}/month`);
-        }
-
-        // Check available purchases for active subscription
-        const purchases = await getAvailablePurchases();
-        const hasActiveSub = purchases?.some(
-          (p: any) => p.productId === PRODUCT_ID
-        );
-
-        if (hasActiveSub) {
-          setIsSubscribed(true);
-          await AsyncStorage.setItem(SUBSCRIPTION_KEY, "true");
-        } else {
-          setIsSubscribed(false);
-          await AsyncStorage.setItem(SUBSCRIPTION_KEY, "false");
-          await initTrial();
-        }
-      } else {
-        // Not connected yet, use cached + trial
+      // Ensure we are connected before fetching anything
+      const connected = await ensureConnected();
+      if (!connected) {
         if (cachedSub !== "true") {
           await initTrial();
         }
+        return;
+      }
+
+      // Fetch products to get localised price
+      const products = await fetchProducts();
+      if (products.length > 0) {
+        const sub = products[0];
+        const displayPrice = sub.displayPrice || sub.localizedPrice || "$9.99";
+        setPrice(`${displayPrice}/month`);
+      }
+
+      // Check for an active purchase
+      const purchases = await getAvailablePurchases();
+      const hasActiveSub = purchases?.some(
+        (p: any) => p.productId === PRODUCT_ID
+      );
+
+      if (hasActiveSub) {
+        setIsSubscribed(true);
+        await AsyncStorage.setItem(SUBSCRIPTION_KEY, "true");
+      } else {
+        setIsSubscribed(false);
+        await AsyncStorage.setItem(SUBSCRIPTION_KEY, "false");
+        await initTrial();
       }
     } catch {
       const cachedSub = await AsyncStorage.getItem(SUBSCRIPTION_KEY);
@@ -153,11 +178,32 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [iap?.connected, initTrial]);
+  }, [iap, ensureConnected, fetchProducts, initTrial]);
 
   // Purchase subscription
   const purchaseSubscription = useCallback(async () => {
     if (!iap) return;
+
+    // 1. Ensure StoreKit connection is live
+    const connected = await ensureConnected();
+    if (!connected) {
+      throw new Error("Could not connect to the App Store. Please try again.");
+    }
+
+    // 2. Fetch the product so StoreKit has it in cache before purchase
+    const products = await fetchProducts();
+    if (products.length === 0) {
+      throw new Error(
+        "Subscription product unavailable. Please check your connection and try again."
+      );
+    }
+
+    // 3. Update price display with live data
+    const sub = products[0];
+    const displayPrice = sub.displayPrice || sub.localizedPrice || "$9.99";
+    setPrice(`${displayPrice}/month`);
+
+    // 4. Initiate purchase
     try {
       await iap.requestPurchase({
         request: {
@@ -171,7 +217,7 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
         throw error;
       }
     }
-  }, [iap]);
+  }, [iap, ensureConnected, fetchProducts]);
 
   // Restore purchases
   const restorePurchases = useCallback(async () => {
@@ -192,7 +238,7 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Check on mount and when connected
+  // Check on mount and when connected state changes
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
@@ -243,7 +289,9 @@ function WebSubscriptionManager({ children }: { children: React.ReactNode }) {
       } else {
         const startDate = new Date(trialStart);
         const now = new Date();
-        const diffDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor(
+          (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
         const remaining = TRIAL_DURATION_DAYS - diffDays;
         if (remaining > 0) {
           setIsTrialActive(true);
