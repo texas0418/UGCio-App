@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Dimensions,
   TextInput,
   Platform,
@@ -16,6 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { Plus, X, ImageIcon, Pencil, Trash2, Camera } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { NICHE_CATEGORIES } from "@/mocks/categories";
 import { PortfolioItem } from "@/types";
@@ -59,13 +59,13 @@ export default function PortfolioScreen() {
       return;
     }
 
-    Alert.alert("Add Image", "Choose a source", [
+    showAlert("Add Image", "Choose a source", [
       {
         text: "Take Photo",
         onPress: async () => {
           const { status } = await ImagePicker.requestCameraPermissionsAsync();
           if (status !== "granted") {
-            Alert.alert("Permission needed", "Camera access is required to take a photo.");
+            showAlert("Permission needed", "Camera access is required to take a photo.");
             return;
           }
           const result = await ImagePicker.launchCameraAsync({
@@ -96,11 +96,11 @@ export default function PortfolioScreen() {
 
   const handleAdd = useCallback(() => {
     if (!newItem.uri) {
-      Alert.alert("Missing Image", "Please select an image first.");
+      showAlert("Missing Image", "Please select an image first.");
       return;
     }
     if (!newItem.category) {
-      Alert.alert("Missing Category", "Please select a category.");
+      showAlert("Missing Category", "Please select a category.");
       return;
     }
 
@@ -138,7 +138,7 @@ export default function PortfolioScreen() {
 
   const confirmRemove = useCallback(
     (id: string) => {
-      Alert.alert("Remove Item", "Remove this from your portfolio?", [
+      showAlert("Remove Item", "Remove this from your portfolio?", [
         { text: "Cancel", style: "cancel" },
         {
           text: "Remove",
@@ -160,7 +160,7 @@ export default function PortfolioScreen() {
       if (Platform.OS !== "web") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
-      Alert.alert(item.brandName || "Portfolio Item", item.description || "What would you like to do?", [
+      showAlert(item.brandName || "Portfolio Item", item.description || "What would you like to do?", [
         {
           text: "Edit",
           onPress: () => setEditingItem({ ...item }),

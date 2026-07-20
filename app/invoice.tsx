@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -20,6 +19,7 @@ import {
   Send,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { Invoice, InvoiceItem } from "@/types";
 
@@ -55,17 +55,17 @@ export default function InvoiceScreen() {
 
   const addItem = useCallback(() => {
     if (!newItem.title) {
-      Alert.alert("Missing Title", "Please enter an item title.");
+      showAlert("Missing Title", "Please enter an item title.");
       return;
     }
     const price = parseFloat(newItem.price);
     if (isNaN(price) || price <= 0) {
-      Alert.alert("Invalid Price", "Please enter a valid price.");
+      showAlert("Invalid Price", "Please enter a valid price.");
       return;
     }
     const qty = parseInt(newItem.quantity, 10);
     if (isNaN(qty) || qty < 1) {
-      Alert.alert("Invalid Quantity", "Quantity must be at least 1.");
+      showAlert("Invalid Quantity", "Quantity must be at least 1.");
       return;
     }
     setItems((prev) => [...prev, { title: newItem.title, price, quantity: qty }]);
@@ -128,12 +128,12 @@ export default function InvoiceScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Copied!", "Invoice text copied to clipboard. Paste it in an email or DM.");
+    showAlert("Copied!", "Invoice text copied to clipboard. Paste it in an email or DM.");
   }, [generateInvoiceText]);
 
   const handleSave = useCallback(() => {
     if (items.length === 0) {
-      Alert.alert("No Items", "Please add at least one item to the invoice.");
+      showAlert("No Items", "Please add at least one item to the invoice.");
       return;
     }
     const invoice: Invoice = {
@@ -152,7 +152,7 @@ export default function InvoiceScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Invoice Saved!", "Your invoice has been saved.", [
+    showAlert("Invoice Saved!", "Your invoice has been saved.", [
       { text: "OK", onPress: () => router.back() },
     ]);
   }, [items, brandName, brandEmail, total, dueDate, notes, params.dealId, addInvoice, router]);

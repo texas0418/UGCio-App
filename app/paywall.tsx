@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   Platform,
   ScrollView,
@@ -25,6 +24,7 @@ import {
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const FEATURES = [
@@ -71,7 +71,7 @@ export default function PaywallScreen() {
     try {
       await purchaseSubscription();
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         "Purchase Failed",
         error?.message || "Something went wrong. Please try again.",
         [{ text: "OK" }]
@@ -88,9 +88,9 @@ export default function PaywallScreen() {
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-      Alert.alert("Restored!", "Your subscription has been restored.", [{ text: "OK" }]);
+      showAlert("Restored!", "Your subscription has been restored.", [{ text: "OK" }]);
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         "No Subscription Found",
         "We couldn't find an active subscription for this Apple ID. If you believe this is an error, contact support@ugcio.app.",
         [{ text: "OK" }]

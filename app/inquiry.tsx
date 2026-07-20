@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Linking,
@@ -15,6 +14,7 @@ import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Send, Mail } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 
 export default function InquiryScreen() {
@@ -29,7 +29,7 @@ export default function InquiryScreen() {
 
   const handleSubmit = useCallback(async () => {
     if (!form.brandName || !form.email || !form.message) {
-      Alert.alert(
+      showAlert(
         "Missing Fields",
         "Please fill in your brand name, email, and message."
       );
@@ -37,7 +37,7 @@ export default function InquiryScreen() {
     }
 
     if (!profile.contactEmail) {
-      Alert.alert(
+      showAlert(
         "No Contact Email",
         "The creator hasn't set up their contact email yet."
       );
@@ -69,7 +69,7 @@ export default function InquiryScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch {
-      Alert.alert(
+      showAlert(
         "Error",
         "Could not open email. You can reach the creator at: " + profile.contactEmail
       );

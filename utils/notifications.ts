@@ -22,6 +22,9 @@ async function hasPermission(): Promise<boolean> {
   return status === "granted";
 }
 
+const dealReminderId = (dealId: string) => `deal_reminder_${dealId}`;
+const dealStaleId = (dealId: string) => `deal_stale_${dealId}`;
+
 /**
  * Schedule a deal follow-up reminder for 24 hours from now
  */
@@ -33,6 +36,7 @@ export async function scheduleDealReminder(deal: BrandDeal): Promise<void> {
   if (!prefs.dealReminders) return;
 
   await Notifications.scheduleNotificationAsync({
+    identifier: dealReminderId(deal.id),
     content: {
       title: "Deal Follow-up 🤝",
       body: `Time to follow up with ${deal.brandName}! Keep the momentum going.`,
@@ -63,9 +67,18 @@ export async function scheduleDealStaleReminder(deal: BrandDeal): Promise<void> 
     delivered: "Delivered",
   };
 
-  if (deal.status === "paid") return;
+  // The user just acted on the deal, so the 24h follow-up nudge is obsolete —
+  // and a paid deal needs no further reminders at all.
+  await Notifications.cancelScheduledNotificationAsync(dealReminderId(deal.id)).catch(() => {});
+  if (deal.status === "paid") {
+    await Notifications.cancelScheduledNotificationAsync(dealStaleId(deal.id)).catch(() => {});
+    return;
+  }
 
+  // Re-using the identifier replaces any pending stale reminder, so status
+  // changes don't stack one notification per stage.
   await Notifications.scheduleNotificationAsync({
+    identifier: dealStaleId(deal.id),
     content: {
       title: "Deal needs attention 📋",
       body: `Your deal with ${deal.brandName} has been "${statusLabels[deal.status] || deal.status}" for a while. Ready to move it forward?`,
@@ -77,6 +90,32 @@ export async function scheduleDealStaleReminder(deal: BrandDeal): Promise<void> 
       seconds: 60 * 60 * 24 * 3, // 3 days
     },
   });
+}
+
+/**
+ * Cancel all pending notifications for a deal (call when the deal is removed)
+ */
+export async function cancelDealNotifications(dealId: string): Promise<void> {
+  if (Platform.OS === "web") return;
+  await Notifications.cancelScheduledNotificationAsync(dealReminderId(dealId)).catch(() => {});
+  await Notifications.cancelScheduledNotificationAsync(dealStaleId(dealId)).catch(() => {});
+}
+
+/**
+ * Cancel every pending deal reminder (call when the pref is toggled off)
+ */
+export async function cancelAllDealNotifications(): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    await Promise.all(
+      scheduled
+        .filter((n) => n.identifier.startsWith("deal_"))
+        .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier))
+    );
+  } catch {
+    // best effort
+  }
 }
 
 /**

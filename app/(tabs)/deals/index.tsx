@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -24,6 +23,7 @@ import {
   Receipt,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { BrandDeal, DealStatus } from "@/types";
 
@@ -74,7 +74,7 @@ export default function DealsScreen() {
 
   const handleAdd = useCallback(() => {
     if (!formData.brandName) {
-      Alert.alert("Missing Info", "Please enter the brand name.");
+      showAlert("Missing Info", "Please enter the brand name.");
       return;
     }
     const deal: BrandDeal = {
@@ -112,7 +112,7 @@ export default function DealsScreen() {
 
   const confirmRemove = useCallback(
     (id: string) => {
-      Alert.alert("Remove Deal", "Remove this deal from your tracker?", [
+      showAlert("Remove Deal", "Remove this deal from your tracker?", [
         { text: "Cancel", style: "cancel" },
         { text: "Remove", style: "destructive", onPress: () => removeDeal(id) },
       ]);

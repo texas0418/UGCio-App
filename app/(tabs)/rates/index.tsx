@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   Switch,
-  Alert,
   Platform,
 } from "react-native";
 import * as Haptics from "expo-haptics";
@@ -27,6 +26,7 @@ import {
   DollarSign,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { Deliverable } from "@/types";
 import { RATE_TEMPLATES } from "@/mocks/templates";
@@ -66,12 +66,12 @@ export default function RatesScreen() {
   const saveEdit = useCallback(() => {
     if (!editingId) return;
     if (!formData.title.trim()) {
-      Alert.alert("Missing Title", "Please enter a deliverable title.");
+      showAlert("Missing Title", "Please enter a deliverable title.");
       return;
     }
     const price = parseFloat(formData.price);
     if (isNaN(price) || price <= 0) {
-      Alert.alert("Invalid Price", "Please enter a valid price.");
+      showAlert("Invalid Price", "Please enter a valid price.");
       return;
     }
     updateDeliverable(editingId, {
@@ -88,12 +88,12 @@ export default function RatesScreen() {
 
   const handleAdd = useCallback(() => {
     if (!formData.title) {
-      Alert.alert("Missing Title", "Please enter a deliverable title.");
+      showAlert("Missing Title", "Please enter a deliverable title.");
       return;
     }
     const price = parseFloat(formData.price);
     if (isNaN(price) || price <= 0) {
-      Alert.alert("Invalid Price", "Please enter a valid price.");
+      showAlert("Invalid Price", "Please enter a valid price.");
       return;
     }
     const item: Deliverable = {
@@ -114,7 +114,7 @@ export default function RatesScreen() {
 
   const confirmRemove = useCallback(
     (id: string) => {
-      Alert.alert("Remove Deliverable", "Remove this from your rate card?", [
+      showAlert("Remove Deliverable", "Remove this from your rate card?", [
         { text: "Cancel", style: "cancel" },
         {
           text: "Remove",
@@ -131,7 +131,7 @@ export default function RatesScreen() {
       const template = RATE_TEMPLATES.find((t) => t.id === templateId);
       if (!template) return;
 
-      Alert.alert(
+      showAlert(
         `Apply "${template.name}"?`,
         "This will replace your current rate card with this template's deliverables.",
         [
@@ -164,7 +164,7 @@ export default function RatesScreen() {
   const handleExportRateCard = useCallback(async () => {
     const active = deliverables.filter((d) => d.isActive);
     if (active.length === 0) {
-      Alert.alert("No Active Rates", "Enable at least one deliverable to export.");
+      showAlert("No Active Rates", "Enable at least one deliverable to export.");
       return;
     }
     const lines: string[] = [];
@@ -189,7 +189,7 @@ export default function RatesScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Rate Card Copied!", "Your rate card has been copied to clipboard. Paste it in emails, DMs, or pitch decks.");
+    showAlert("Rate Card Copied!", "Your rate card has been copied to clipboard. Paste it in emails, DMs, or pitch decks.");
   }, [deliverables, profile, totalValue, activeCount]);
 
   return (

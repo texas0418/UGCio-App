@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Alert,
   Platform,
   Linking,
 } from "react-native";
@@ -27,7 +26,14 @@ import {
   Crown,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useCreator } from "@/contexts/CreatorContext";
+import {
+  scheduleWeeklyDigest,
+  cancelWeeklyDigest,
+  cancelAllDealNotifications,
+} from "@/utils/notifications";
 
 const NOTIFICATION_PREFS_KEY = "notification_preferences";
 
@@ -44,6 +50,7 @@ const DEFAULT_PREFS: NotificationPrefs = {
 export default function SettingsScreen() {
   const router = useRouter();
   const { isSubscribed, isTrialActive, trialDaysRemaining, price } = useSubscription();
+  const { resetOnboarding } = useCreator();
   const [notifPermission, setNotifPermission] = useState<string>("undetermined");
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
 
@@ -73,7 +80,7 @@ export default function SettingsScreen() {
     const { status } = await Notifications.requestPermissionsAsync();
     setNotifPermission(status);
     if (status !== "granted") {
-      Alert.alert(
+      showAlert(
         "Notifications Disabled",
         "To enable notifications, go to Settings > UGCio and turn on notifications.",
         [
@@ -90,33 +97,40 @@ export default function SettingsScreen() {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
       const updated = { ...prefs, [key]: value };
-      savePrefs(updated);
+      // Persist first: schedule/cancel below re-read the stored prefs.
+      savePrefs(updated).then(() => {
+        if (key === "weeklyDigest") {
+          (value ? scheduleWeeklyDigest() : cancelWeeklyDigest()).catch(() => {});
+        } else if (key === "dealReminders" && !value) {
+          cancelAllDealNotifications().catch(() => {});
+        }
+      });
     },
     [prefs]
   );
 
   const handleResetOnboarding = useCallback(() => {
-    Alert.alert(
+    showAlert(
       "Reset Onboarding",
-      "This will show the onboarding screens again next time you open the app.",
+      "This will take you back to the onboarding screens now.",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Reset",
           onPress: async () => {
-            await AsyncStorage.setItem("creator_onboarded", "false");
+            await resetOnboarding();
             if (Platform.OS !== "web") {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             }
-            Alert.alert("Done", "Onboarding will show on next app launch.");
+            router.back();
           },
         },
       ]
     );
-  }, []);
+  }, [resetOnboarding, router]);
 
   const handleClearData = useCallback(() => {
-    Alert.alert(
+    showAlert(
       "Clear All Data",
       "This will permanently delete your profile, portfolio, rates, deals, and all other data. The app will restart. This cannot be undone.",
       [
@@ -148,14 +162,14 @@ export default function SettingsScreen() {
                   DevSettings.reload();
                 } else {
                   // Production fallback
-                  Alert.alert(
+                  showAlert(
                     "Data Cleared",
                     "Please close and reopen the app to complete the reset."
                   );
                 }
               })
               .catch(() => {
-                Alert.alert("Error", "Failed to clear data. Please try again.");
+                showAlert("Error", "Failed to clear data. Please try again.");
               });
           },
         },

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Animated,
   Platform,
   ActivityIndicator,
@@ -39,6 +38,7 @@ import {
 } from "lucide-react-native";
 import { publishProfile } from "@/services/publishService";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { AvailabilityStatus } from "@/types";
 
@@ -66,7 +66,7 @@ export default function ShareScreen() {
     if (isPublishing) return;
 
     if (!profile.username) {
-      Alert.alert("Username Required", "Please set a username in your profile before publishing.");
+      showAlert("Username Required", "Please set a username in your profile before publishing.");
       return;
     }
 
@@ -86,7 +86,7 @@ export default function ShareScreen() {
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
-        Alert.alert(
+        showAlert(
           "Published!",
           `Your profile is live at ${result.url}`,
           [
@@ -96,10 +96,10 @@ export default function ShareScreen() {
           ]
         );
       } else {
-        Alert.alert("Publish Failed", result.error || "Something went wrong. Please try again.");
+        showAlert("Publish Failed", result.error || "Something went wrong. Please try again.");
       }
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong.");
+      showAlert("Error", error.message || "Something went wrong.");
     } finally {
       setIsPublishing(false);
       setPublishStatus("");
@@ -134,7 +134,7 @@ export default function ShareScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Copied!", "Your link has been copied to clipboard.");
+    showAlert("Copied!", "Your link has been copied to clipboard.");
   }, [shareUrl, scaleAnim]);
 
   const handleCopyMediaKit = useCallback(async () => {
@@ -194,7 +194,7 @@ export default function ShareScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Media Kit Copied!", "Your full media kit text has been copied to clipboard. Paste it anywhere.");
+    showAlert("Media Kit Copied!", "Your full media kit text has been copied to clipboard. Paste it anywhere.");
   }, [profile, activeDeliverables, testimonials, portfolio, shareUrl]);
 
   const profileComplete = useMemo(() => {
