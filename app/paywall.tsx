@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   ScrollView,
   Linking,
 } from "react-native";
+import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import {
   Crown,
@@ -20,6 +21,7 @@ import {
   Send,
   FileText,
   RotateCcw,
+  X,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/colors";
@@ -34,10 +36,32 @@ const FEATURES = [
 ];
 
 export default function PaywallScreen() {
-  const { price, purchaseSubscription, restorePurchases, trialDaysRemaining } =
-    useSubscription();
+  const {
+    price,
+    purchaseSubscription,
+    restorePurchases,
+    trialDaysRemaining,
+    isSubscribed,
+    trialExpired,
+  } = useSubscription();
+  const router = useRouter();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+
+  const dismiss = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
+  }, [router]);
+
+  // Leave the paywall as soon as a subscription is active (purchase or restore)
+  useEffect(() => {
+    if (isSubscribed) {
+      dismiss();
+    }
+  }, [isSubscribed, dismiss]);
 
   const handlePurchase = useCallback(async () => {
     setIsPurchasing(true);
@@ -84,6 +108,18 @@ export default function PaywallScreen() {
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.6 }}
       />
+      {!trialExpired && (
+        <TouchableOpacity
+          style={styles.closeBtn}
+          onPress={dismiss}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Close paywall"
+          testID="paywall-close-btn"
+        >
+          <X size={22} color={Colors.textSecondary} />
+        </TouchableOpacity>
+      )}
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -96,8 +132,11 @@ export default function PaywallScreen() {
 
         <Text style={styles.title}>Go Pro with UGCio</Text>
         <Text style={styles.subtitle}>
-          Your free trial has ended. Subscribe to keep using all
-          features and grow your UGC business.
+          {trialExpired
+            ? "Your free trial has ended. Subscribe to keep using all features and grow your UGC business."
+            : `You have ${trialDaysRemaining} ${
+                trialDaysRemaining === 1 ? "day" : "days"
+              } left in your free trial. Subscribe to keep using all features and grow your UGC business.`}
         </Text>
 
         <View style={styles.featuresCard}>
@@ -186,6 +225,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  closeBtn: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 24 : 20,
+    right: 20,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
   bgGradient: {
     position: "absolute",

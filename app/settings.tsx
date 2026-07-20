@@ -127,8 +127,13 @@ export default function SettingsScreen() {
           onPress: () => {
             AsyncStorage.getAllKeys()
               .then((keys) => {
-                if (keys.length > 0) {
-                  return AsyncStorage.multiRemove(keys);
+                // Never wipe trial/subscription markers — clearing them
+                // would restart the 14-day free trial.
+                const removable = keys.filter(
+                  (k) => k !== "ugcio_trial_start" && k !== "ugcio_subscription_active"
+                );
+                if (removable.length > 0) {
+                  return AsyncStorage.multiRemove(removable);
                 }
               })
               .then(() => {

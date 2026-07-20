@@ -23,6 +23,9 @@ import Colors from "@/constants/colors";
 import { useCreator } from "@/contexts/CreatorContext";
 import { Invoice, InvoiceItem } from "@/types";
 
+const formatMoney = (n: number) =>
+  n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export default function InvoiceScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -60,7 +63,11 @@ export default function InvoiceScreen() {
       Alert.alert("Invalid Price", "Please enter a valid price.");
       return;
     }
-    const qty = parseInt(newItem.quantity, 10) || 1;
+    const qty = parseInt(newItem.quantity, 10);
+    if (isNaN(qty) || qty < 1) {
+      Alert.alert("Invalid Quantity", "Quantity must be at least 1.");
+      return;
+    }
     setItems((prev) => [...prev, { title: newItem.title, price, quantity: qty }]);
     setNewItem({ title: "", price: "", quantity: "1" });
     setShowAddItem(false);
@@ -95,7 +102,7 @@ export default function InvoiceScreen() {
     lines.push("");
     lines.push("───────────────────────────────");
     items.forEach((item) => {
-      const lineTotal = item.price * item.quantity;
+      const lineTotal = formatMoney(item.price * item.quantity);
       if (item.quantity > 1) {
         lines.push(`${item.title}  x${item.quantity}  $${lineTotal}`);
       } else {
@@ -103,7 +110,7 @@ export default function InvoiceScreen() {
       }
     });
     lines.push("───────────────────────────────");
-    lines.push(`TOTAL: $${total}`);
+    lines.push(`TOTAL: $${formatMoney(total)}`);
     lines.push("");
     if (notes) {
       lines.push(`Notes: ${notes}`);

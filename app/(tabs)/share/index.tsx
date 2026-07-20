@@ -57,7 +57,7 @@ const AVAILABILITY_DISPLAY: Record<AvailabilityStatus, { label: string; color: s
 
 export default function ShareScreen() {
   const router = useRouter();
-  const { profile, portfolio, deliverables, analytics, testimonials, incrementAnalytic } = useCreator();
+  const { profile, portfolio, deliverables, analytics, testimonials } = useCreator();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string>("");
@@ -197,13 +197,6 @@ export default function ShareScreen() {
     Alert.alert("Media Kit Copied!", "Your full media kit text has been copied to clipboard. Paste it anywhere.");
   }, [profile, activeDeliverables, testimonials, portfolio, shareUrl]);
 
-  const simulateView = useCallback(() => {
-    incrementAnalytic("totalViews");
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  }, [incrementAnalytic]);
-
   const profileComplete = useMemo(() => {
     let score = 0;
     if (profile.name) score += 20;
@@ -299,9 +292,6 @@ export default function ShareScreen() {
             <BarChart3 size={16} color={Colors.accent} />
             <Text style={styles.analyticsSectionTitle}>Analytics</Text>
           </View>
-          <TouchableOpacity onPress={simulateView} style={styles.simBtn} activeOpacity={0.7}>
-            <Text style={styles.simBtnText}>Simulate View</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.analyticsGrid}>
@@ -601,17 +591,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700" as const,
     color: Colors.text,
-  },
-  simBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: Colors.primaryLight,
-  },
-  simBtnText: {
-    fontSize: 11,
-    fontWeight: "600" as const,
-    color: Colors.primary,
   },
   analyticsGrid: {
     flexDirection: "row",

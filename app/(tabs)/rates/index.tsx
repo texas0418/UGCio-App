@@ -24,6 +24,7 @@ import {
   ChevronRight,
   Copy,
   Share2,
+  DollarSign,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useCreator } from "@/contexts/CreatorContext";
@@ -64,6 +65,10 @@ export default function RatesScreen() {
 
   const saveEdit = useCallback(() => {
     if (!editingId) return;
+    if (!formData.title.trim()) {
+      Alert.alert("Missing Title", "Please enter a deliverable title.");
+      return;
+    }
     const price = parseFloat(formData.price);
     if (isNaN(price) || price <= 0) {
       Alert.alert("Invalid Price", "Please enter a valid price.");
@@ -168,12 +173,12 @@ export default function RatesScreen() {
     lines.push("═══════════════════════════════");
     lines.push("");
     active.forEach((d) => {
-      lines.push(`▸ ${d.title}  —  ${d.price}`);
+      lines.push(`▸ ${d.title}  —  $${d.price.toLocaleString()}`);
       if (d.description) lines.push(`  ${d.description}`);
       lines.push("");
     });
     lines.push("───────────────────────────────");
-    lines.push(`Total Rate Card Value: ${totalValue}`);
+    lines.push(`Total Rate Card Value: $${totalValue.toLocaleString()}`);
     lines.push(`Active Services: ${activeCount}`);
     lines.push("");
     if (profile.username) {

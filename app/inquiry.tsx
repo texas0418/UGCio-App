@@ -62,17 +62,11 @@ export default function InquiryScreen() {
     const mailto = `mailto:${profile.contactEmail}?subject=${subject}&body=${body}&cc=${encodeURIComponent(form.email)}`;
 
     try {
-      const canOpen = await Linking.canOpenURL(mailto);
-      if (canOpen) {
-        await Linking.openURL(mailto);
-        if (Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-      } else {
-        Alert.alert(
-          "No Email App",
-          "No email app is available. Please email the creator directly at: " + profile.contactEmail
-        );
+      // Open directly — canOpenURL always fails for mailto: on iOS unless
+      // the scheme is declared in LSApplicationQueriesSchemes.
+      await Linking.openURL(mailto);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch {
       Alert.alert(
