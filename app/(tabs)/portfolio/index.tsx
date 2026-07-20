@@ -278,6 +278,7 @@ export default function PortfolioScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
       >
         <ScrollView
           horizontal
@@ -380,6 +381,7 @@ export default function PortfolioScreen() {
           <ScrollView
             contentContainerStyle={styles.modalContent}
             showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
           >
             {editingItem &&
               renderForm(

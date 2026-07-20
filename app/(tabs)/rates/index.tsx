@@ -197,6 +197,7 @@ export default function RatesScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.statsRow}>
         <View style={styles.statCard}>

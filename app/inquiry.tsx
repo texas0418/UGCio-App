@@ -15,6 +15,7 @@ import * as Haptics from "expo-haptics";
 import { Send, Mail } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { showAlert } from "@/utils/alert";
+import { isValidEmail } from "@/utils/validate";
 import { useCreator } from "@/contexts/CreatorContext";
 
 export default function InquiryScreen() {
@@ -33,6 +34,11 @@ export default function InquiryScreen() {
         "Missing Fields",
         "Please fill in your brand name, email, and message."
       );
+      return;
+    }
+
+    if (!isValidEmail(form.email)) {
+      showAlert("Invalid Email", "Please enter a valid email address.");
       return;
     }
 

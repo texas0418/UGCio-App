@@ -430,8 +430,13 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
       const updated = deals.filter((d) => d.id !== id);
       dealsMutation.mutate(updated);
       cancelDealNotifications(id).catch(() => {});
+      // Drop the deal's auto-generated calendar events too
+      const remainingEvents = calendarEvents.filter((e) => e.dealId !== id);
+      if (remainingEvents.length !== calendarEvents.length) {
+        calendarMutation.mutate(remainingEvents);
+      }
     },
-    [deals]
+    [deals, calendarEvents]
   );
 
   const addTestimonial = useCallback(
@@ -461,14 +466,17 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
   const incrementAnalytic = useCallback(
     (key: "totalViews" | "portfolioClicks" | "rateCardViews" | "inquiries") => {
       const updated = { ...analytics, [key]: analytics[key] + 1 };
-      const today = new Date().toISOString().split("T")[0];
-      const existingDay = updated.viewsByDay.find((d) => d.date === today);
-      if (existingDay) {
-        updated.viewsByDay = updated.viewsByDay.map((d) =>
-          d.date === today ? { ...d, views: d.views + 1 } : d
-        );
-      } else {
-        updated.viewsByDay = [...updated.viewsByDay.slice(-29), { date: today, views: 1 }];
+      // The daily chart tracks views only — other metrics have their own tiles.
+      if (key === "totalViews") {
+        const today = new Date().toISOString().split("T")[0];
+        const existingDay = updated.viewsByDay.find((d) => d.date === today);
+        if (existingDay) {
+          updated.viewsByDay = updated.viewsByDay.map((d) =>
+            d.date === today ? { ...d, views: d.views + 1 } : d
+          );
+        } else {
+          updated.viewsByDay = [...updated.viewsByDay.slice(-29), { date: today, views: 1 }];
+        }
       }
       analyticsMutation.mutate(updated);
     },

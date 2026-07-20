@@ -6,11 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  TextInput,
+  Share,
   Platform,
   Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Notifications from "expo-notifications";
+import * as Clipboard from "expo-clipboard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import {
@@ -24,6 +28,8 @@ import {
   Shield,
   RotateCcw,
   Crown,
+  Download,
+  Upload,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { showAlert } from "@/utils/alert";
@@ -47,12 +53,98 @@ const DEFAULT_PREFS: NotificationPrefs = {
   weeklyDigest: true,
 };
 
+// Everything that makes up the user's business data. Deliberately excludes
+// trial/subscription markers and device-local flags.
+const BACKUP_KEYS = [
+  "creator_profile",
+  "creator_portfolio",
+  "creator_deliverables",
+  "creator_deals",
+  "creator_testimonials",
+  "creator_analytics",
+  "creator_invoices",
+  "creator_calendar",
+  "notification_preferences",
+];
+
 export default function SettingsScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { isSubscribed, isTrialActive, trialDaysRemaining, price } = useSubscription();
   const { resetOnboarding } = useCreator();
   const [notifPermission, setNotifPermission] = useState<string>("undetermined");
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
+  const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState("");
+
+  const handleExportData = useCallback(async () => {
+    try {
+      const pairs = await AsyncStorage.multiGet(BACKUP_KEYS);
+      const data: Record<string, unknown> = {};
+      for (const [key, value] of pairs) {
+        if (value != null) data[key] = JSON.parse(value);
+      }
+      const payload = JSON.stringify({
+        app: "ugcio",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data,
+      });
+      if (Platform.OS === "web") {
+        await Clipboard.setStringAsync(payload);
+        showAlert(
+          "Backup Copied",
+          "Your backup has been copied to the clipboard as JSON. Paste it somewhere safe — you can restore it later with Import Backup."
+        );
+      } else {
+        await Share.share({ message: payload });
+      }
+    } catch {
+      showAlert("Export Failed", "Could not export your data. Please try again.");
+    }
+  }, []);
+
+  const handleImportData = useCallback(() => {
+    let entries: [string, string][];
+    try {
+      const parsed = JSON.parse(importText.trim());
+      if (parsed?.app !== "ugcio" || typeof parsed?.data !== "object" || !parsed.data) {
+        throw new Error("not a backup");
+      }
+      entries = Object.entries(parsed.data)
+        .filter(([key]) => BACKUP_KEYS.includes(key))
+        .map(([key, value]) => [key, JSON.stringify(value)]);
+      if (entries.length === 0) throw new Error("empty backup");
+    } catch {
+      showAlert(
+        "Invalid Backup",
+        "That doesn't look like a UGCio backup. Paste the full JSON exported from Export Backup."
+      );
+      return;
+    }
+    showAlert(
+      "Restore Backup?",
+      "This will replace your current profile, portfolio, rates, deals, and other data with the backup.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Restore",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await AsyncStorage.multiSet(entries);
+              await queryClient.invalidateQueries();
+              setShowImport(false);
+              setImportText("");
+              showAlert("Backup Restored", "Your data has been restored.");
+            } catch {
+              showAlert("Import Failed", "Could not restore the backup. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  }, [importText, queryClient]);
 
   useEffect(() => {
     loadPrefs();
@@ -364,6 +456,64 @@ export default function SettingsScreen() {
       {/* Data Section */}
       <Text style={styles.sectionHeader}>Data</Text>
       <View style={styles.section}>
+        <TouchableOpacity style={styles.row} onPress={handleExportData} activeOpacity={0.7}>
+          <View style={styles.rowLeft}>
+            <View style={[styles.iconWrap, { backgroundColor: Colors.successLight }]}>
+              <Download size={16} color={Colors.success} />
+            </View>
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle}>Export Backup</Text>
+              <Text style={styles.rowSub}>Save all your data as JSON</Text>
+            </View>
+          </View>
+          <ChevronRight size={18} color={Colors.textTertiary} />
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => setShowImport((v) => !v)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.rowLeft}>
+            <View style={[styles.iconWrap, { backgroundColor: Colors.accentLight }]}>
+              <Upload size={16} color={Colors.accent} />
+            </View>
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle}>Import Backup</Text>
+              <Text style={styles.rowSub}>Restore from an exported backup</Text>
+            </View>
+          </View>
+          <ChevronRight size={18} color={Colors.textTertiary} />
+        </TouchableOpacity>
+
+        {showImport && (
+          <View style={styles.importBox}>
+            <TextInput
+              style={styles.importInput}
+              value={importText}
+              onChangeText={setImportText}
+              placeholder="Paste your backup JSON here..."
+              placeholderTextColor={Colors.textTertiary}
+              multiline
+              textAlignVertical="top"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={[styles.importBtn, !importText.trim() && styles.importBtnDisabled]}
+              onPress={handleImportData}
+              disabled={!importText.trim()}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.importBtnText}>Restore Backup</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.divider} />
+
         <TouchableOpacity
           style={styles.row}
           onPress={handleResetOnboarding}
@@ -403,6 +553,35 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  importBox: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 10,
+  },
+  importInput: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 12,
+    padding: 12,
+    minHeight: 100,
+    fontSize: 13,
+    color: Colors.text,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  importBtn: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    padding: 14,
+    alignItems: "center",
+  },
+  importBtnDisabled: {
+    opacity: 0.5,
+  },
+  importBtnText: {
+    fontSize: 15,
+    fontWeight: "700" as const,
+    color: Colors.white,
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.background,

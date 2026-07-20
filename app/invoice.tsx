@@ -20,6 +20,7 @@ import {
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { showAlert } from "@/utils/alert";
+import { isValidEmail } from "@/utils/validate";
 import { useCreator } from "@/contexts/CreatorContext";
 import { Invoice, InvoiceItem } from "@/types";
 
@@ -136,6 +137,10 @@ export default function InvoiceScreen() {
       showAlert("No Items", "Please add at least one item to the invoice.");
       return;
     }
+    if (brandEmail.trim() && !isValidEmail(brandEmail)) {
+      showAlert("Invalid Email", "Please enter a valid brand email or leave it empty.");
+      return;
+    }
     const invoice: Invoice = {
       id: Date.now().toString(),
       dealId: params.dealId,
@@ -167,6 +172,7 @@ export default function InvoiceScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.headerSection}>
         <Text style={styles.fromLabel}>FROM</Text>
