@@ -45,3 +45,5 @@ yarn-error.*
 core
 node_modules
 .expo
+# Claude Code local settings
+.claude/settings.local.json

@@ -27,6 +27,7 @@ import { Invoice, InvoiceItem } from "@/types";
 const formatMoney = (n: number) =>
   n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function InvoiceScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{

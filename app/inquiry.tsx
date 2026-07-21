@@ -95,7 +95,7 @@ export default function InquiryScreen() {
           Work with {profile.name || "this creator"}
         </Text>
         <Text style={styles.subheading}>
-          Fill out the form and we'll open an email ready to send.
+          Fill out the form and we&apos;ll open an email ready to send.
         </Text>
 
         <View style={styles.field}>

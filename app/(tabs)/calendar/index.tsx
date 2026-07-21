@@ -56,6 +56,7 @@ function toDateKey(date: Date | string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function CalendarScreen() {
   const { calendarEvents, addCalendarEvent, updateCalendarEvent, removeCalendarEvent } = useCreator();
   const [currentDate, setCurrentDate] = useState(new Date());

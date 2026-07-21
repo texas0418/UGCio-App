@@ -5,6 +5,7 @@ import { Alert, AlertButton, Platform } from "react-native";
  * silently disables every confirmation and validation dialog on web — map to
  * window.alert / window.confirm there instead.
  */
+// eslint-disable-next-line complexity -- tracked in #3
 export function showAlert(
   title: string,
   message?: string,

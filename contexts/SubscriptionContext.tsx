@@ -60,6 +60,7 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
   const [price, setPrice] = useState("$9.99/month");
 
   const iap = useIAP
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- tracked in #4
     ? useIAP({
         onPurchaseSuccess: async (purchase: any) => {
           try {

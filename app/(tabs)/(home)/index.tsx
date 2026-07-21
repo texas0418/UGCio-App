@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- tracked in #1 */
 import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
@@ -53,6 +54,7 @@ const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; icon: Re
   { value: "booked", label: "Fully Booked", icon: Clock, color: Colors.danger, bg: Colors.dangerLight },
 ];
 
+// eslint-disable-next-line max-lines-per-function, complexity -- tracked in #1
 export default function ProfileScreen() {
   const router = useRouter();
   const pathname = usePathname();
@@ -703,7 +705,7 @@ export default function ProfileScreen() {
                     <Trash2 size={14} color={Colors.textTertiary} />
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.testimonialContent}>"{t.content}"</Text>
+                <Text style={styles.testimonialContent}>&ldquo;{t.content}&rdquo;</Text>
               </View>
             ))}
           </View>

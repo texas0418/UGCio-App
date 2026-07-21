@@ -55,6 +55,7 @@ const DEFAULT_ANALYTICS: AnalyticsData = {
   inquiries: 0,
 };
 
+// eslint-disable-next-line max-lines-per-function, complexity -- tracked in #2
 export const [CreatorProvider, useCreator] = createContextHook(() => {
   const queryClient = useQueryClient();
 

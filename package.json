@@ -6,7 +6,8 @@
     "start": "expo start",
     "start-web": "expo start --web",
     "start-web-dev": "DEBUG=expo* expo start --web",
-    "lint": "expo lint",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
