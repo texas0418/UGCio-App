@@ -24,6 +24,7 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const GRID_GAP = 2;
 const ITEM_SIZE = (SCREEN_WIDTH - 40 - GRID_GAP * 2) / 3;
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function PortfolioScreen() {
   const { portfolio, addPortfolioItem, removePortfolioItem, updatePortfolioItem } = useCreator();
   const [showAddForm, setShowAddForm] = useState(false);

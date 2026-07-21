@@ -32,6 +32,7 @@ import { Deliverable } from "@/types";
 import { RATE_TEMPLATES } from "@/mocks/templates";
 import * as Linking from "expo-linking";
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function RatesScreen() {
   const { deliverables, updateDeliverable, addDeliverable, removeDeliverable, setDeliverables, profile } =
     useCreator();

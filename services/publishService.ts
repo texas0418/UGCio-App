@@ -92,6 +92,7 @@ async function resolveImageUrl(
 /**
  * Publish the full creator profile to the website
  */
+// eslint-disable-next-line complexity -- tracked in #3
 export async function publishProfile(
   profile: CreatorProfile,
   portfolio: PortfolioItem[],

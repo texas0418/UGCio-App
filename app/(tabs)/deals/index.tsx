@@ -37,6 +37,7 @@ const DEAL_STATUSES: { value: DealStatus; label: string; color: string; bg: stri
   { value: "paid", label: "Paid", color: Colors.success, bg: Colors.successLight, icon: DollarSign },
 ];
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function DealsScreen() {
   const router = useRouter();
   const { deals, addDeal, updateDeal, removeDeal } = useCreator();

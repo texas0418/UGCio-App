@@ -55,6 +55,7 @@ const AVAILABILITY_DISPLAY: Record<AvailabilityStatus, { label: string; color: s
   booked: { label: "Fully Booked", color: Colors.danger, icon: Clock },
 };
 
+// eslint-disable-next-line max-lines-per-function, complexity -- tracked in #1
 export default function ShareScreen() {
   const router = useRouter();
   const { profile, portfolio, deliverables, analytics, testimonials } = useCreator();
@@ -454,7 +455,7 @@ export default function ShareScreen() {
             <Text style={styles.previewSectionTitle}>What Brands Say</Text>
             {testimonials.slice(0, 2).map((t) => (
               <View key={t.id} style={styles.previewTestimonialItem}>
-                <Text style={styles.previewTestimonialText}>"{t.content}"</Text>
+                <Text style={styles.previewTestimonialText}>&ldquo;{t.content}&rdquo;</Text>
                 <Text style={styles.previewTestimonialBrand}>— {t.brandName}</Text>
               </View>
             ))}

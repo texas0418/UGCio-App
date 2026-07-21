@@ -67,6 +67,7 @@ const BACKUP_KEYS = [
   "notification_preferences",
 ];
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function SettingsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
