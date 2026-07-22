@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Animated,
   Platform,
   ActivityIndicator,
@@ -39,6 +38,7 @@ import {
 } from "lucide-react-native";
 import { publishProfile } from "@/services/publishService";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { AvailabilityStatus } from "@/types";
 
@@ -55,9 +55,10 @@ const AVAILABILITY_DISPLAY: Record<AvailabilityStatus, { label: string; color: s
   booked: { label: "Fully Booked", color: Colors.danger, icon: Clock },
 };
 
+// eslint-disable-next-line max-lines-per-function, complexity -- tracked in #1
 export default function ShareScreen() {
   const router = useRouter();
-  const { profile, portfolio, deliverables, analytics, testimonials, incrementAnalytic } = useCreator();
+  const { profile, portfolio, deliverables, analytics, testimonials } = useCreator();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishStatus, setPublishStatus] = useState<string>("");
@@ -66,7 +67,7 @@ export default function ShareScreen() {
     if (isPublishing) return;
 
     if (!profile.username) {
-      Alert.alert("Username Required", "Please set a username in your profile before publishing.");
+      showAlert("Username Required", "Please set a username in your profile before publishing.");
       return;
     }
 
@@ -86,7 +87,7 @@ export default function ShareScreen() {
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
-        Alert.alert(
+        showAlert(
           "Published!",
           `Your profile is live at ${result.url}`,
           [
@@ -96,10 +97,10 @@ export default function ShareScreen() {
           ]
         );
       } else {
-        Alert.alert("Publish Failed", result.error || "Something went wrong. Please try again.");
+        showAlert("Publish Failed", result.error || "Something went wrong. Please try again.");
       }
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong.");
+      showAlert("Error", error.message || "Something went wrong.");
     } finally {
       setIsPublishing(false);
       setPublishStatus("");
@@ -134,7 +135,7 @@ export default function ShareScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Copied!", "Your link has been copied to clipboard.");
+    showAlert("Copied!", "Your link has been copied to clipboard.");
   }, [shareUrl, scaleAnim]);
 
   const handleCopyMediaKit = useCallback(async () => {
@@ -194,15 +195,8 @@ export default function ShareScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Media Kit Copied!", "Your full media kit text has been copied to clipboard. Paste it anywhere.");
+    showAlert("Media Kit Copied!", "Your full media kit text has been copied to clipboard. Paste it anywhere.");
   }, [profile, activeDeliverables, testimonials, portfolio, shareUrl]);
-
-  const simulateView = useCallback(() => {
-    incrementAnalytic("totalViews");
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  }, [incrementAnalytic]);
 
   const profileComplete = useMemo(() => {
     let score = 0;
@@ -299,9 +293,6 @@ export default function ShareScreen() {
             <BarChart3 size={16} color={Colors.accent} />
             <Text style={styles.analyticsSectionTitle}>Analytics</Text>
           </View>
-          <TouchableOpacity onPress={simulateView} style={styles.simBtn} activeOpacity={0.7}>
-            <Text style={styles.simBtnText}>Simulate View</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.analyticsGrid}>
@@ -464,7 +455,7 @@ export default function ShareScreen() {
             <Text style={styles.previewSectionTitle}>What Brands Say</Text>
             {testimonials.slice(0, 2).map((t) => (
               <View key={t.id} style={styles.previewTestimonialItem}>
-                <Text style={styles.previewTestimonialText}>"{t.content}"</Text>
+                <Text style={styles.previewTestimonialText}>&ldquo;{t.content}&rdquo;</Text>
                 <Text style={styles.previewTestimonialBrand}>— {t.brandName}</Text>
               </View>
             ))}
@@ -601,17 +592,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700" as const,
     color: Colors.text,
-  },
-  simBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: Colors.primaryLight,
-  },
-  simBtnText: {
-    fontSize: 11,
-    fontWeight: "600" as const,
-    color: Colors.primary,
   },
   analyticsGrid: {
     flexDirection: "row",

@@ -2,7 +2,12 @@ import { useEffect, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import createContextHook from "@nkzw/create-context-hook";
-import { scheduleDealReminder, scheduleDealStaleReminder } from "@/utils/notifications";
+import {
+  scheduleDealReminder,
+  scheduleDealStaleReminder,
+  cancelDealNotifications,
+} from "@/utils/notifications";
+import { persistImage, migrateImageUri } from "@/utils/imageStorage";
 import {
   CreatorProfile,
   PortfolioItem,
@@ -50,6 +55,7 @@ const DEFAULT_ANALYTICS: AnalyticsData = {
   inquiries: 0,
 };
 
+// eslint-disable-next-line max-lines-per-function, complexity -- tracked in #2
 export const [CreatorProvider, useCreator] = createContextHook(() => {
   const queryClient = useQueryClient();
 
@@ -81,6 +87,11 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
     await onboardedMutation.mutateAsync(true);
   }, []);
 
+  const resetOnboarding = useCallback(async () => {
+    queryClient.setQueryData(["creator_onboarded"], false);
+    await onboardedMutation.mutateAsync(false);
+  }, []);
+
   const profileQuery = useQuery({
     queryKey: ["creator_profile"],
     queryFn: async () => {
@@ -88,6 +99,15 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
       if (stored) {
         const parsed = JSON.parse(stored) as CreatorProfile;
         if (!parsed.availability) parsed.availability = "available";
+        // Migrate avatars saved by older versions to permanent storage and
+        // rebase container paths that went stale after an app update.
+        if (parsed.avatarUrl) {
+          const avatarUrl = await migrateImageUri(parsed.avatarUrl, "avatar");
+          if (avatarUrl !== parsed.avatarUrl) {
+            parsed.avatarUrl = avatarUrl;
+            await AsyncStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(parsed));
+          }
+        }
         return parsed;
       }
       return DEFAULT_PROFILE;
@@ -98,7 +118,28 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
     queryKey: ["creator_portfolio"],
     queryFn: async () => {
       const stored = await AsyncStorage.getItem(STORAGE_KEYS.PORTFOLIO);
-      return stored ? (JSON.parse(stored) as PortfolioItem[]) : [];
+      if (!stored) return [];
+      const items = JSON.parse(stored) as PortfolioItem[];
+      // Same migration as the avatar: cache URIs → document storage,
+      // stale container paths → current container.
+      let changed = false;
+      const migrated = await Promise.all(
+        items.map(async (item) => {
+          const uri = await migrateImageUri(item.uri, "portfolio");
+          const thumbnailUri = item.thumbnailUri
+            ? await migrateImageUri(item.thumbnailUri, "portfolio_thumb")
+            : item.thumbnailUri;
+          if (uri !== item.uri || thumbnailUri !== item.thumbnailUri) {
+            changed = true;
+            return { ...item, uri, thumbnailUri };
+          }
+          return item;
+        })
+      );
+      if (changed) {
+        await AsyncStorage.setItem(STORAGE_KEYS.PORTFOLIO, JSON.stringify(migrated));
+      }
+      return migrated;
     },
   });
 
@@ -243,6 +284,14 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
 
   const updateProfile = useCallback(
     (updates: Partial<CreatorProfile>) => {
+      if (updates.avatarUrl && updates.avatarUrl.startsWith("file://")) {
+        const pending = { ...updates };
+        (async () => {
+          pending.avatarUrl = await persistImage(pending.avatarUrl!, "avatar");
+          profileMutation.mutate({ ...profile, ...pending });
+        })();
+        return;
+      }
       const updated = { ...profile, ...updates };
       profileMutation.mutate(updated);
     },
@@ -251,8 +300,13 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
 
   const addPortfolioItem = useCallback(
     (item: PortfolioItem) => {
-      const updated = [item, ...portfolio];
-      portfolioMutation.mutate(updated);
+      (async () => {
+        const uri = await persistImage(item.uri, "portfolio");
+        const thumbnailUri = item.thumbnailUri
+          ? await persistImage(item.thumbnailUri, "portfolio_thumb")
+          : item.thumbnailUri;
+        portfolioMutation.mutate([{ ...item, uri, thumbnailUri }, ...portfolio]);
+      })();
     },
     [portfolio]
   );
@@ -267,10 +321,16 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
 
   const updatePortfolioItem = useCallback(
     (id: string, updates: Partial<PortfolioItem>) => {
-      const updated = portfolio.map((item) =>
-        item.id === id ? { ...item, ...updates } : item
-      );
-      portfolioMutation.mutate(updated);
+      (async () => {
+        const resolved = { ...updates };
+        if (resolved.uri && resolved.uri.startsWith("file://")) {
+          resolved.uri = await persistImage(resolved.uri, "portfolio");
+        }
+        const updated = portfolio.map((item) =>
+          item.id === id ? { ...item, ...resolved } : item
+        );
+        portfolioMutation.mutate(updated);
+      })();
     },
     [portfolio]
   );
@@ -370,8 +430,14 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
     (id: string) => {
       const updated = deals.filter((d) => d.id !== id);
       dealsMutation.mutate(updated);
+      cancelDealNotifications(id).catch(() => {});
+      // Drop the deal's auto-generated calendar events too
+      const remainingEvents = calendarEvents.filter((e) => e.dealId !== id);
+      if (remainingEvents.length !== calendarEvents.length) {
+        calendarMutation.mutate(remainingEvents);
+      }
     },
-    [deals]
+    [deals, calendarEvents]
   );
 
   const addTestimonial = useCallback(
@@ -401,14 +467,17 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
   const incrementAnalytic = useCallback(
     (key: "totalViews" | "portfolioClicks" | "rateCardViews" | "inquiries") => {
       const updated = { ...analytics, [key]: analytics[key] + 1 };
-      const today = new Date().toISOString().split("T")[0];
-      const existingDay = updated.viewsByDay.find((d) => d.date === today);
-      if (existingDay) {
-        updated.viewsByDay = updated.viewsByDay.map((d) =>
-          d.date === today ? { ...d, views: d.views + 1 } : d
-        );
-      } else {
-        updated.viewsByDay = [...updated.viewsByDay.slice(-29), { date: today, views: 1 }];
+      // The daily chart tracks views only — other metrics have their own tiles.
+      if (key === "totalViews") {
+        const today = new Date().toISOString().split("T")[0];
+        const existingDay = updated.viewsByDay.find((d) => d.date === today);
+        if (existingDay) {
+          updated.viewsByDay = updated.viewsByDay.map((d) =>
+            d.date === today ? { ...d, views: d.views + 1 } : d
+          );
+        } else {
+          updated.viewsByDay = [...updated.viewsByDay.slice(-29), { date: today, views: 1 }];
+        }
       }
       analyticsMutation.mutate(updated);
     },
@@ -490,6 +559,7 @@ export const [CreatorProvider, useCreator] = createContextHook(() => {
     hasOnboarded,
     isLoading,
     completeOnboarding,
+    resetOnboarding,
     updateProfile,
     addPortfolioItem,
     removePortfolioItem,

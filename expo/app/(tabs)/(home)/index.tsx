@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- tracked in #1 */
 import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
@@ -6,11 +7,10 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   Linking,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
@@ -33,6 +33,7 @@ import {
   Calendar,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { NICHE_CATEGORIES, SOCIAL_PLATFORMS } from "@/mocks/categories";
@@ -53,28 +54,33 @@ const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; icon: Re
   { value: "booked", label: "Fully Booked", icon: Clock, color: Colors.danger, bg: Colors.dangerLight },
 ];
 
-let _hasRedirectedToOnboarding = false;
-let _hasRedirectedToPaywall = false;
-
+// eslint-disable-next-line max-lines-per-function, complexity -- tracked in #1
 export default function ProfileScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const { profile, updateProfile, testimonials, addTestimonial, removeTestimonial, hasOnboarded, isLoading } = useCreator();
   const { isSubscribed, isTrialActive, trialExpired, trialDaysRemaining, isLoading: subLoading } = useSubscription();
 
   useEffect(() => {
-    if (!isLoading && !hasOnboarded && !_hasRedirectedToOnboarding) {
-      _hasRedirectedToOnboarding = true;
+    if (!isLoading && !hasOnboarded) {
       router.replace("/onboarding" as never);
     }
   }, [isLoading, hasOnboarded, router]);
 
-  // Redirect to paywall if trial expired and not subscribed
+  // Gate on the paywall while the trial is expired and no subscription is
+  // active. Keyed on pathname so escaping the paywall re-triggers the gate.
   useEffect(() => {
-    if (!isLoading && !subLoading && hasOnboarded && trialExpired && !isSubscribed && !_hasRedirectedToPaywall) {
-      _hasRedirectedToPaywall = true;
+    if (
+      !isLoading &&
+      !subLoading &&
+      hasOnboarded &&
+      trialExpired &&
+      !isSubscribed &&
+      pathname !== "/paywall"
+    ) {
       router.push("/paywall" as never);
     }
-  }, [isLoading, subLoading, hasOnboarded, trialExpired, isSubscribed, router]);
+  }, [isLoading, subLoading, hasOnboarded, trialExpired, isSubscribed, pathname, router]);
   const [showNichePicker, setShowNichePicker] = useState(false);
   const [showSocialForm, setShowSocialForm] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
@@ -105,13 +111,13 @@ export default function ProfileScreen() {
       return;
     }
 
-    Alert.alert("Add Headshot", "Choose a photo source", [
+    showAlert("Add Headshot", "Choose a photo source", [
       {
         text: "Take Photo",
         onPress: async () => {
           const { status } = await ImagePicker.requestCameraPermissionsAsync();
           if (status !== "granted") {
-            Alert.alert("Permission needed", "Camera access is required to take a photo.");
+            showAlert("Permission needed", "Camera access is required to take a photo.");
             return;
           }
           const result = await ImagePicker.launchCameraAsync({
@@ -197,7 +203,7 @@ export default function ProfileScreen() {
 
   const addSocialLink = useCallback(() => {
     if (!newSocialPlatform || !newSocialUrl.trim()) {
-      Alert.alert("Missing Info", "Please select a platform and enter a handle or URL.");
+      showAlert("Missing Info", "Please select a platform and enter a handle or URL.");
       return;
     }
     const url = formatSocialUrl(newSocialPlatform, newSocialUrl);
@@ -236,7 +242,7 @@ export default function ProfileScreen() {
 
   const handleAddTestimonial = useCallback(() => {
     if (!newTestimonial.brandName || !newTestimonial.content) {
-      Alert.alert("Missing Info", "Please enter the brand name and testimonial.");
+      showAlert("Missing Info", "Please enter the brand name and testimonial.");
       return;
     }
     const item: Testimonial = {
@@ -256,7 +262,7 @@ export default function ProfileScreen() {
 
   const confirmRemoveTestimonial = useCallback(
     (id: string) => {
-      Alert.alert("Remove Testimonial", "Remove this testimonial?", [
+      showAlert("Remove Testimonial", "Remove this testimonial?", [
         { text: "Cancel", style: "cancel" },
         { text: "Remove", style: "destructive", onPress: () => removeTestimonial(id) },
       ]);
@@ -290,6 +296,7 @@ export default function ProfileScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.avatarSection}>
         <TouchableOpacity
@@ -542,7 +549,7 @@ export default function ProfileScreen() {
                 onPress={() => {
                   if (link.url) {
                     Linking.openURL(link.url).catch(() => {
-                      Alert.alert("Error", "Could not open this link.");
+                      showAlert("Error", "Could not open this link.");
                     });
                   }
                 }}
@@ -698,7 +705,7 @@ export default function ProfileScreen() {
                     <Trash2 size={14} color={Colors.textTertiary} />
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.testimonialContent}>"{t.content}"</Text>
+                <Text style={styles.testimonialContent}>&ldquo;{t.content}&rdquo;</Text>
               </View>
             ))}
           </View>

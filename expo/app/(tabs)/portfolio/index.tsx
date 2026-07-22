@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Dimensions,
   TextInput,
   Platform,
@@ -16,6 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { Plus, X, ImageIcon, Pencil, Trash2, Camera } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { NICHE_CATEGORIES } from "@/mocks/categories";
 import { PortfolioItem } from "@/types";
@@ -24,6 +24,7 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const GRID_GAP = 2;
 const ITEM_SIZE = (SCREEN_WIDTH - 40 - GRID_GAP * 2) / 3;
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function PortfolioScreen() {
   const { portfolio, addPortfolioItem, removePortfolioItem, updatePortfolioItem } = useCreator();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -59,13 +60,13 @@ export default function PortfolioScreen() {
       return;
     }
 
-    Alert.alert("Add Image", "Choose a source", [
+    showAlert("Add Image", "Choose a source", [
       {
         text: "Take Photo",
         onPress: async () => {
           const { status } = await ImagePicker.requestCameraPermissionsAsync();
           if (status !== "granted") {
-            Alert.alert("Permission needed", "Camera access is required to take a photo.");
+            showAlert("Permission needed", "Camera access is required to take a photo.");
             return;
           }
           const result = await ImagePicker.launchCameraAsync({
@@ -96,11 +97,11 @@ export default function PortfolioScreen() {
 
   const handleAdd = useCallback(() => {
     if (!newItem.uri) {
-      Alert.alert("Missing Image", "Please select an image first.");
+      showAlert("Missing Image", "Please select an image first.");
       return;
     }
     if (!newItem.category) {
-      Alert.alert("Missing Category", "Please select a category.");
+      showAlert("Missing Category", "Please select a category.");
       return;
     }
 
@@ -138,7 +139,7 @@ export default function PortfolioScreen() {
 
   const confirmRemove = useCallback(
     (id: string) => {
-      Alert.alert("Remove Item", "Remove this from your portfolio?", [
+      showAlert("Remove Item", "Remove this from your portfolio?", [
         { text: "Cancel", style: "cancel" },
         {
           text: "Remove",
@@ -160,7 +161,7 @@ export default function PortfolioScreen() {
       if (Platform.OS !== "web") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
-      Alert.alert(item.brandName || "Portfolio Item", item.description || "What would you like to do?", [
+      showAlert(item.brandName || "Portfolio Item", item.description || "What would you like to do?", [
         {
           text: "Edit",
           onPress: () => setEditingItem({ ...item }),
@@ -278,6 +279,7 @@ export default function PortfolioScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
       >
         <ScrollView
           horizontal
@@ -380,6 +382,7 @@ export default function PortfolioScreen() {
           <ScrollView
             contentContainerStyle={styles.modalContent}
             showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
           >
             {editingItem &&
               renderForm(

@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   Switch,
-  Alert,
   Platform,
 } from "react-native";
 import * as Haptics from "expo-haptics";
@@ -24,13 +23,16 @@ import {
   ChevronRight,
   Copy,
   Share2,
+  DollarSign,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
 import { useCreator } from "@/contexts/CreatorContext";
 import { Deliverable } from "@/types";
 import { RATE_TEMPLATES } from "@/mocks/templates";
 import * as Linking from "expo-linking";
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function RatesScreen() {
   const { deliverables, updateDeliverable, addDeliverable, removeDeliverable, setDeliverables, profile } =
     useCreator();
@@ -64,9 +66,13 @@ export default function RatesScreen() {
 
   const saveEdit = useCallback(() => {
     if (!editingId) return;
+    if (!formData.title.trim()) {
+      showAlert("Missing Title", "Please enter a deliverable title.");
+      return;
+    }
     const price = parseFloat(formData.price);
     if (isNaN(price) || price <= 0) {
-      Alert.alert("Invalid Price", "Please enter a valid price.");
+      showAlert("Invalid Price", "Please enter a valid price.");
       return;
     }
     updateDeliverable(editingId, {
@@ -83,12 +89,12 @@ export default function RatesScreen() {
 
   const handleAdd = useCallback(() => {
     if (!formData.title) {
-      Alert.alert("Missing Title", "Please enter a deliverable title.");
+      showAlert("Missing Title", "Please enter a deliverable title.");
       return;
     }
     const price = parseFloat(formData.price);
     if (isNaN(price) || price <= 0) {
-      Alert.alert("Invalid Price", "Please enter a valid price.");
+      showAlert("Invalid Price", "Please enter a valid price.");
       return;
     }
     const item: Deliverable = {
@@ -109,7 +115,7 @@ export default function RatesScreen() {
 
   const confirmRemove = useCallback(
     (id: string) => {
-      Alert.alert("Remove Deliverable", "Remove this from your rate card?", [
+      showAlert("Remove Deliverable", "Remove this from your rate card?", [
         { text: "Cancel", style: "cancel" },
         {
           text: "Remove",
@@ -126,7 +132,7 @@ export default function RatesScreen() {
       const template = RATE_TEMPLATES.find((t) => t.id === templateId);
       if (!template) return;
 
-      Alert.alert(
+      showAlert(
         `Apply "${template.name}"?`,
         "This will replace your current rate card with this template's deliverables.",
         [
@@ -159,7 +165,7 @@ export default function RatesScreen() {
   const handleExportRateCard = useCallback(async () => {
     const active = deliverables.filter((d) => d.isActive);
     if (active.length === 0) {
-      Alert.alert("No Active Rates", "Enable at least one deliverable to export.");
+      showAlert("No Active Rates", "Enable at least one deliverable to export.");
       return;
     }
     const lines: string[] = [];
@@ -168,12 +174,12 @@ export default function RatesScreen() {
     lines.push("═══════════════════════════════");
     lines.push("");
     active.forEach((d) => {
-      lines.push(`▸ ${d.title}  —  ${d.price}`);
+      lines.push(`▸ ${d.title}  —  $${d.price.toLocaleString()}`);
       if (d.description) lines.push(`  ${d.description}`);
       lines.push("");
     });
     lines.push("───────────────────────────────");
-    lines.push(`Total Rate Card Value: ${totalValue}`);
+    lines.push(`Total Rate Card Value: $${totalValue.toLocaleString()}`);
     lines.push(`Active Services: ${activeCount}`);
     lines.push("");
     if (profile.username) {
@@ -184,7 +190,7 @@ export default function RatesScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    Alert.alert("Rate Card Copied!", "Your rate card has been copied to clipboard. Paste it in emails, DMs, or pitch decks.");
+    showAlert("Rate Card Copied!", "Your rate card has been copied to clipboard. Paste it in emails, DMs, or pitch decks.");
   }, [deliverables, profile, totalValue, activeCount]);
 
   return (
@@ -192,6 +198,7 @@ export default function RatesScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.statsRow}>
         <View style={styles.statCard}>

@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -22,8 +21,11 @@ import {
   DollarSign,
   Trash2,
   Receipt,
+  Pencil,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
+import { showAlert } from "@/utils/alert";
+import { isValidEmail, parseMoney } from "@/utils/validate";
 import { useCreator } from "@/contexts/CreatorContext";
 import { BrandDeal, DealStatus } from "@/types";
 
@@ -35,17 +37,24 @@ const DEAL_STATUSES: { value: DealStatus; label: string; color: string; bg: stri
   { value: "paid", label: "Paid", color: Colors.success, bg: Colors.successLight, icon: DollarSign },
 ];
 
+// eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function DealsScreen() {
   const router = useRouter();
   const { deals, addDeal, updateDeal, removeDeal } = useCreator();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<DealStatus | "all">("all");
   const [formData, setFormData] = useState({
     brandName: "",
     contactEmail: "",
     description: "",
     budget: "",
+    status: "new" as DealStatus,
   });
+
+  const resetForm = useCallback(() => {
+    setFormData({ brandName: "", contactEmail: "", description: "", budget: "", status: "new" });
+  }, []);
 
   const filteredDeals = useMemo(() => {
     if (selectedStatus === "all") return deals;
@@ -72,28 +81,84 @@ export default function DealsScreen() {
       .reduce((sum, d) => sum + (d.budget ?? 0), 0);
   }, [deals]);
 
-  const handleAdd = useCallback(() => {
-    if (!formData.brandName) {
-      Alert.alert("Missing Info", "Please enter the brand name.");
-      return;
+  // Returns {budget} on success, or null after showing the relevant alert.
+  const validateForm = useCallback((): { budget?: number } | null => {
+    if (!formData.brandName.trim()) {
+      showAlert("Missing Info", "Please enter the brand name.");
+      return null;
     }
+    if (formData.contactEmail.trim() && !isValidEmail(formData.contactEmail)) {
+      showAlert("Invalid Email", "Please enter a valid contact email or leave it empty.");
+      return null;
+    }
+    let budget: number | undefined;
+    if (formData.budget.trim()) {
+      const parsed = parseMoney(formData.budget);
+      if (parsed === null) {
+        showAlert("Invalid Budget", "Please enter a valid amount, e.g. 500.");
+        return null;
+      }
+      budget = parsed;
+    }
+    return { budget };
+  }, [formData]);
+
+  const handleAdd = useCallback(() => {
+    const valid = validateForm();
+    if (!valid) return;
     const deal: BrandDeal = {
       id: Date.now().toString(),
-      brandName: formData.brandName,
-      contactEmail: formData.contactEmail,
+      brandName: formData.brandName.trim(),
+      contactEmail: formData.contactEmail.trim(),
       description: formData.description,
-      budget: formData.budget ? parseFloat(formData.budget) : undefined,
+      budget: valid.budget,
       status: "new",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     addDeal(deal);
-    setFormData({ brandName: "", contactEmail: "", description: "", budget: "" });
+    resetForm();
     setShowAddForm(false);
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [formData, addDeal]);
+  }, [formData, addDeal, validateForm, resetForm]);
+
+  const startEdit = useCallback((deal: BrandDeal) => {
+    setShowAddForm(false);
+    setEditingId(deal.id);
+    setFormData({
+      brandName: deal.brandName,
+      contactEmail: deal.contactEmail,
+      description: deal.description,
+      budget: deal.budget != null ? String(deal.budget) : "",
+      status: deal.status,
+    });
+  }, []);
+
+  const handleSaveEdit = useCallback(() => {
+    if (!editingId) return;
+    const valid = validateForm();
+    if (!valid) return;
+    const original = deals.find((d) => d.id === editingId);
+    const updates: Partial<BrandDeal> = {
+      brandName: formData.brandName.trim(),
+      contactEmail: formData.contactEmail.trim(),
+      description: formData.description,
+      budget: valid.budget,
+    };
+    // Only send status when it changed — updateDeal's side effects (calendar
+    // event, stale reminder) key off the presence of updates.status.
+    if (original && formData.status !== original.status) {
+      updates.status = formData.status;
+    }
+    updateDeal(editingId, updates);
+    setEditingId(null);
+    resetForm();
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [editingId, formData, deals, updateDeal, validateForm, resetForm]);
 
   const moveToNext = useCallback(
     (deal: BrandDeal) => {
@@ -112,7 +177,7 @@ export default function DealsScreen() {
 
   const confirmRemove = useCallback(
     (id: string) => {
-      Alert.alert("Remove Deal", "Remove this deal from your tracker?", [
+      showAlert("Remove Deal", "Remove this deal from your tracker?", [
         { text: "Cancel", style: "cancel" },
         { text: "Remove", style: "destructive", onPress: () => removeDeal(id) },
       ]);
@@ -138,6 +203,7 @@ export default function DealsScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.summaryRow}>
           <View style={styles.summaryCard}>
@@ -184,11 +250,20 @@ export default function DealsScreen() {
           })}
         </ScrollView>
 
-        {showAddForm && (
+        {(showAddForm || editingId) && (
           <View style={styles.addForm}>
             <View style={styles.addFormHeader}>
-              <Text style={styles.addFormTitle}>New Deal</Text>
-              <TouchableOpacity onPress={() => setShowAddForm(false)} style={styles.closeBtn}>
+              <Text style={styles.addFormTitle}>{editingId ? "Edit Deal" : "New Deal"}</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAddForm(false);
+                  setEditingId(null);
+                  resetForm();
+                }}
+                style={styles.closeBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Close form"
+              >
                 <X size={18} color={Colors.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -225,8 +300,36 @@ export default function DealsScreen() {
               placeholderTextColor={Colors.textTertiary}
               keyboardType="numeric"
             />
-            <TouchableOpacity style={styles.saveBtn} onPress={handleAdd} activeOpacity={0.8}>
-              <Text style={styles.saveBtnText}>Add Deal</Text>
+            {editingId && (
+              <View style={styles.statusPickerWrap}>
+                <Text style={styles.statusPickerLabel}>Status</Text>
+                <View style={styles.statusPickerRow}>
+                  {DEAL_STATUSES.map((s) => {
+                    const active = formData.status === s.value;
+                    return (
+                      <TouchableOpacity
+                        key={s.value}
+                        style={[
+                          styles.statusPickChip,
+                          active && { backgroundColor: s.bg, borderColor: s.color },
+                        ]}
+                        onPress={() => setFormData((p) => ({ ...p, status: s.value }))}
+                      >
+                        <Text style={[styles.statusPickText, active && { color: s.color }]}>
+                          {s.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.saveBtn}
+              onPress={editingId ? handleSaveEdit : handleAdd}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.saveBtnText}>{editingId ? "Save Changes" : "Add Deal"}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -269,10 +372,12 @@ export default function DealsScreen() {
                     </Text>
                   ) : null}
 
-                  {deal.budget ? (
+                  {deal.budget != null ? (
                     <View style={styles.dealBudgetRow}>
                       <DollarSign size={14} color={Colors.primary} />
-                      <Text style={styles.dealBudget}>${deal.budget.toLocaleString()}</Text>
+                      <Text style={styles.dealBudget}>
+                        {deal.budget === 0 ? "Gifted / Product exchange" : `$${deal.budget.toLocaleString()}`}
+                      </Text>
                     </View>
                   ) : null}
 
@@ -282,8 +387,19 @@ export default function DealsScreen() {
                         onPress={() => confirmRemove(deal.id)}
                         style={styles.dealActionBtn}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Delete deal with ${deal.brandName}`}
                       >
                         <Trash2 size={14} color={Colors.danger} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => startEdit(deal)}
+                        style={styles.dealActionBtn}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Edit deal with ${deal.brandName}`}
+                      >
+                        <Pencil size={14} color={Colors.textSecondary} />
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() =>
@@ -330,9 +446,13 @@ export default function DealsScreen() {
             <View style={styles.emptyIconWrap}>
               <FileText size={36} color={Colors.textTertiary} />
             </View>
-            <Text style={styles.emptyTitle}>No deals yet</Text>
+            <Text style={styles.emptyTitle}>
+              {selectedStatus === "all" ? "No deals yet" : "No deals in this stage"}
+            </Text>
             <Text style={styles.emptySubtitle}>
-              Track your brand partnerships from first contact to payment
+              {selectedStatus === "all"
+                ? "Track your brand partnerships from first contact to payment"
+                : "Deals you move to this stage will show up here"}
             </Text>
           </View>
         )}
@@ -340,12 +460,18 @@ export default function DealsScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {!showAddForm && (
+      {!showAddForm && !editingId && (
         <TouchableOpacity
           style={styles.fab}
-          onPress={() => setShowAddForm(true)}
+          onPress={() => {
+            setEditingId(null);
+            resetForm();
+            setShowAddForm(true);
+          }}
           activeOpacity={0.85}
           testID="add-deal-btn"
+          accessibilityRole="button"
+          accessibilityLabel="Add deal"
         >
           <Plus size={22} color={Colors.white} />
         </TouchableOpacity>
@@ -459,6 +585,34 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
+  },
+  statusPickerWrap: {
+    gap: 8,
+  },
+  statusPickerLabel: {
+    fontSize: 12,
+    fontWeight: "600" as const,
+    color: Colors.textSecondary,
+    textTransform: "uppercase" as const,
+    letterSpacing: 0.5,
+  },
+  statusPickerRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  statusPickChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  statusPickText: {
+    fontSize: 12,
+    fontWeight: "600" as const,
+    color: Colors.textSecondary,
   },
   saveBtnText: {
     fontSize: 16,
