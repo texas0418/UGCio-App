@@ -22,6 +22,7 @@ import {
   Trash2,
   Receipt,
   Pencil,
+  ChevronDown,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { showAlert } from "@/utils/alert";
@@ -204,6 +205,7 @@ export default function DealsScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
       >
         <View style={styles.summaryRow}>
           <View style={styles.summaryCard}>
@@ -358,12 +360,19 @@ export default function DealsScreen() {
                         ) : null}
                       </View>
                     </View>
-                    <View style={[styles.statusBadge, { backgroundColor: config.bg }]}>
+                    <TouchableOpacity
+                      style={[styles.statusBadge, { backgroundColor: config.bg }]}
+                      onPress={() => startEdit(deal)}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Change status for ${deal.brandName}, currently ${config.label}`}
+                    >
                       <StatusIcon size={12} color={config.color} />
                       <Text style={[styles.statusText, { color: config.color }]}>
                         {config.label}
                       </Text>
-                    </View>
+                      <ChevronDown size={12} color={config.color} />
+                    </TouchableOpacity>
                   </View>
 
                   {deal.description ? (

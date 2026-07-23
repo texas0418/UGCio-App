@@ -174,6 +174,7 @@ export default function InvoiceScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
     >
       <View style={styles.headerSection}>
         <Text style={styles.fromLabel}>FROM</Text>

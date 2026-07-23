@@ -303,7 +303,8 @@ export default function CalendarScreen() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled">
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets>
         {/* Month nav */}
         <View style={styles.monthNav}>
           <TouchableOpacity onPress={goToPrevMonth} style={styles.navBtn}>
@@ -470,7 +471,8 @@ export default function CalendarScreen() {
       >
         <View style={styles.modalContainer}>
           <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled">
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets>
             {renderForm(true)}
           </ScrollView>
         </View>
