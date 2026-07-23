@@ -3,7 +3,7 @@ import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import React, { useEffect } from "react";
-import { Platform, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { X } from "lucide-react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CreatorProvider } from "@/contexts/CreatorContext";
@@ -82,25 +82,13 @@ function RootLayoutNav() {
   );
 }
 
-async function registerForNotifications() {
-  if (Platform.OS === "web") return;
-  try {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    // Permission status: finalStatus
-  } catch (e) {
-    // Notification registration failed silently
-  }
-}
-
 export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync();
-    registerForNotifications();
+    // Don't request notification permission at cold start — it fires the
+    // one-shot iOS prompt over onboarding with no context. Settings has a
+    // deliberate, contextual request instead. initNotifications only schedules
+    // when permission is already granted, so it's a no-op until then.
     initNotifications();
   }, []);
 
