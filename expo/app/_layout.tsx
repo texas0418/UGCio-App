@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import React, { useEffect } from "react";
-import { Platform } from "react-native";
+import { Platform, TouchableOpacity } from "react-native";
+import { X } from "lucide-react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CreatorProvider } from "@/contexts/CreatorContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
@@ -12,6 +13,30 @@ import Colors from "@/constants/colors";
 import { initNotifications } from "@/utils/notifications";
 
 SplashScreen.preventAutoHideAsync();
+
+// Explicit close for modal screens — otherwise they can only be swiped down.
+function ModalCloseButton() {
+  const router = useRouter();
+  return (
+    <TouchableOpacity
+      onPress={() => router.back()}
+      accessibilityRole="button"
+      accessibilityLabel="Close"
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      style={{ padding: 4 }}
+    >
+      <X size={22} color={Colors.text} />
+    </TouchableOpacity>
+  );
+}
+
+const modalOptions = (title: string) => ({
+  presentation: "modal" as const,
+  title,
+  headerStyle: { backgroundColor: Colors.surface },
+  headerTintColor: Colors.text,
+  headerLeft: () => <ModalCloseButton />,
+});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -41,42 +66,10 @@ function RootLayoutNav() {
         name="onboarding"
         options={{ headerShown: false, gestureEnabled: false }}
       />
-      <Stack.Screen
-        name="inquiry"
-        options={{
-          presentation: "modal",
-          title: "Work With Me",
-          headerStyle: { backgroundColor: Colors.surface },
-          headerTintColor: Colors.text,
-        }}
-      />
-      <Stack.Screen
-        name="invoice"
-        options={{
-          presentation: "modal",
-          title: "Create Invoice",
-          headerStyle: { backgroundColor: Colors.surface },
-          headerTintColor: Colors.text,
-        }}
-      />
-      <Stack.Screen
-        name="settings"
-        options={{
-          presentation: "modal",
-          title: "Settings",
-          headerStyle: { backgroundColor: Colors.surface },
-          headerTintColor: Colors.text,
-        }}
-      />
-      <Stack.Screen
-        name="about"
-        options={{
-          presentation: "modal",
-          title: "About & Help",
-          headerStyle: { backgroundColor: Colors.surface },
-          headerTintColor: Colors.text,
-        }}
-      />
+      <Stack.Screen name="inquiry" options={modalOptions("Work With Me")} />
+      <Stack.Screen name="invoice" options={modalOptions("Create Invoice")} />
+      <Stack.Screen name="settings" options={modalOptions("Settings")} />
+      <Stack.Screen name="about" options={modalOptions("About & Help")} />
       <Stack.Screen
         name="paywall"
         options={{

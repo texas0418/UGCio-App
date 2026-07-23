@@ -23,6 +23,7 @@ import {
   Receipt,
   Pencil,
   ChevronDown,
+  Calendar,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { showAlert } from "@/utils/alert";
@@ -44,6 +45,7 @@ export default function DealsScreen() {
   const { deals, addDeal, updateDeal, removeDeal } = useCreator();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<DealStatus | "all">("all");
   const [formData, setFormData] = useState({
     brandName: "",
@@ -51,10 +53,12 @@ export default function DealsScreen() {
     description: "",
     budget: "",
     status: "new" as DealStatus,
+    dueDate: "", // ISO date, or "" for none
   });
 
   const resetForm = useCallback(() => {
-    setFormData({ brandName: "", contactEmail: "", description: "", budget: "", status: "new" });
+    setFormData({ brandName: "", contactEmail: "", description: "", budget: "", status: "new", dueDate: "" });
+    setShowDatePicker(false);
   }, []);
 
   const filteredDeals = useMemo(() => {
@@ -114,6 +118,7 @@ export default function DealsScreen() {
       description: formData.description,
       budget: valid.budget,
       status: "new",
+      dueDate: formData.dueDate || undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -134,7 +139,9 @@ export default function DealsScreen() {
       description: deal.description,
       budget: deal.budget != null ? String(deal.budget) : "",
       status: deal.status,
+      dueDate: deal.dueDate ?? "",
     });
+    setShowDatePicker(false);
   }, []);
 
   const handleSaveEdit = useCallback(() => {
@@ -147,6 +154,7 @@ export default function DealsScreen() {
       contactEmail: formData.contactEmail.trim(),
       description: formData.description,
       budget: valid.budget,
+      dueDate: formData.dueDate || undefined,
     };
     // Only send status when it changed — updateDeal's side effects (calendar
     // event, stale reminder) key off the presence of updates.status.
@@ -302,6 +310,68 @@ export default function DealsScreen() {
               placeholderTextColor={Colors.textTertiary}
               keyboardType="numeric"
             />
+            <View style={styles.dateRow}>
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={() => setShowDatePicker((v) => !v)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Set deal date"
+              >
+                <Calendar size={16} color={Colors.textSecondary} />
+                <Text
+                  style={[styles.dateButtonText, !formData.dueDate && { color: Colors.textTertiary }]}
+                >
+                  {formData.dueDate
+                    ? new Date(formData.dueDate).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Add a date (optional)"}
+                </Text>
+              </TouchableOpacity>
+              {formData.dueDate ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setFormData((p) => ({ ...p, dueDate: "" }));
+                    setShowDatePicker(false);
+                  }}
+                  style={styles.dateClear}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear deal date"
+                >
+                  <X size={16} color={Colors.textTertiary} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+            {showDatePicker && (Platform.OS === "ios" || Platform.OS === "android") && (
+              <View style={styles.datePickerWrap}>
+                {(() => {
+                  const DateTimePicker = require("@react-native-community/datetimepicker").default;
+                  return (
+                    <DateTimePicker
+                      value={formData.dueDate ? new Date(formData.dueDate) : new Date()}
+                      mode="date"
+                      display={Platform.OS === "ios" ? "inline" : "default"}
+                      themeVariant="dark"
+                      accentColor={Colors.primary}
+                      onChange={(_event: any, selectedDate?: Date) => {
+                        if (Platform.OS === "android") setShowDatePicker(false);
+                        if (selectedDate) {
+                          setFormData((p) => ({ ...p, dueDate: selectedDate.toISOString() }));
+                        }
+                      }}
+                    />
+                  );
+                })()}
+                {Platform.OS === "ios" && (
+                  <TouchableOpacity style={styles.datePickerDone} onPress={() => setShowDatePicker(false)}>
+                    <Text style={styles.datePickerDoneText}>Done</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
             {editingId && (
               <View style={styles.statusPickerWrap}>
                 <Text style={styles.statusPickerLabel}>Status</Text>
@@ -594,6 +664,53 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
+  },
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  dateButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  dateButtonText: {
+    fontSize: 15,
+    color: Colors.text,
+  },
+  dateClear: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  datePickerWrap: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 12,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  datePickerDone: {
+    alignSelf: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  datePickerDoneText: {
+    fontSize: 15,
+    fontWeight: "600" as const,
+    color: Colors.primary,
   },
   statusPickerWrap: {
     gap: 8,
