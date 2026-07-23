@@ -163,7 +163,7 @@ export async function publishProfile(
     const data = await response.json();
     return {
       success: true,
-      url: data.url || `https://ugcio.app/${username}`,
+      url: data.url || `https://www.ugcio.app/${username}`,
     };
   } catch (error: any) {
     console.error("Publish error:", error);
