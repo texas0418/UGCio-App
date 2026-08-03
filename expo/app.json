@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ugcio.app",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "infoPlist": {
         "CFBundleDisplayName": "UGCio",
         "ITSAppUsesNonExemptEncryption": false,
@@ -50,10 +50,20 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "./plugins/withExportCompliance"
+      "./plugins/withExportCompliance",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": "https://ugcio.app/"
+      },
+      "eas": {
+        "projectId": "cd2d3cd3-1fd7-48e6-90d4-d6bf82594de6"
+      }
+    },
+    "owner": "boyscout1970"
   }
 }

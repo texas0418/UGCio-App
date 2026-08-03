@@ -280,6 +280,7 @@ export default function PortfolioScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
       >
         <ScrollView
           horizontal
@@ -383,6 +384,7 @@ export default function PortfolioScreen() {
             contentContainerStyle={styles.modalContent}
             showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
           >
             {editingItem &&
               renderForm(

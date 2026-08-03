@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "expo-web",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8090"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "expo", "run", "start-web-8090"],
       "port": 8090,
       "autoPort": false
     }

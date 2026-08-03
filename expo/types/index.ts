@@ -54,6 +54,7 @@ export interface BrandDeal {
   description: string;
   budget?: number;
   status: DealStatus;
+  dueDate?: string; // ISO date — drives the deal's calendar event
   createdAt: string;
   updatedAt: string;
   notes?: string;

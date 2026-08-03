@@ -54,6 +54,12 @@ const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; icon: Re
   { value: "booked", label: "Fully Booked", icon: Clock, color: Colors.danger, bg: Colors.dangerLight },
 ];
 
+// Latches the onboarding redirect to a single fire per un-onboarded episode.
+// Module scope (not a ref) so it survives ProfileScreen unmount/remount during
+// the redirect. Reset to false once onboarding completes, so Reset Onboarding
+// (which flips hasOnboarded back to false) can re-trigger it.
+let onboardingRedirectFired = false;
+
 // eslint-disable-next-line max-lines-per-function, complexity -- tracked in #1
 export default function ProfileScreen() {
   const router = useRouter();
@@ -62,8 +68,15 @@ export default function ProfileScreen() {
   const { isSubscribed, isTrialActive, trialExpired, trialDaysRemaining, isLoading: subLoading } = useSubscription();
 
   useEffect(() => {
-    if (!isLoading && !hasOnboarded) {
-      router.replace("/onboarding" as never);
+    if (isLoading) return;
+    if (!hasOnboarded) {
+      if (!onboardingRedirectFired) {
+        onboardingRedirectFired = true;
+        router.replace("/onboarding" as never);
+      }
+    } else {
+      // Onboarded — re-arm so a later reset can redirect again.
+      onboardingRedirectFired = false;
     }
   }, [isLoading, hasOnboarded, router]);
 
@@ -297,6 +310,7 @@ export default function ProfileScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
     >
       <View style={styles.avatarSection}>
         <TouchableOpacity
