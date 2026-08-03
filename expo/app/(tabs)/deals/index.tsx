@@ -39,6 +39,164 @@ const DEAL_STATUSES: { value: DealStatus; label: string; color: string; bg: stri
   { value: "paid", label: "Paid", color: Colors.success, bg: Colors.successLight, icon: DollarSign },
 ];
 
+type DealFormData = {
+  brandName: string;
+  contactEmail: string;
+  description: string;
+  budget: string;
+  status: DealStatus;
+  dueDate: string; // ISO date, or "" for none
+};
+
+function DealFormCard({
+  formData,
+  setFormData,
+  editingId,
+  showDatePicker,
+  setShowDatePicker,
+  onClose,
+  onSubmit,
+}: {
+  formData: DealFormData;
+  setFormData: React.Dispatch<React.SetStateAction<DealFormData>>;
+  editingId: string | null;
+  showDatePicker: boolean;
+  setShowDatePicker: React.Dispatch<React.SetStateAction<boolean>>;
+  onClose: () => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <View style={styles.addForm}>
+      <View style={styles.addFormHeader}>
+        <Text style={styles.addFormTitle}>{editingId ? "Edit Deal" : "New Deal"}</Text>
+        <TouchableOpacity
+          onPress={onClose}
+          style={styles.closeBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Close form"
+        >
+          <X size={18} color={Colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+      <TextInput
+        style={styles.input}
+        value={formData.brandName}
+        onChangeText={(t) => setFormData((p) => ({ ...p, brandName: t }))}
+        placeholder="Brand name"
+        placeholderTextColor={Colors.textTertiary}
+      />
+      <TextInput
+        style={styles.input}
+        value={formData.contactEmail}
+        onChangeText={(t) => setFormData((p) => ({ ...p, contactEmail: t }))}
+        placeholder="Contact email"
+        placeholderTextColor={Colors.textTertiary}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={[styles.input, styles.descInput]}
+        value={formData.description}
+        onChangeText={(t) => setFormData((p) => ({ ...p, description: t }))}
+        placeholder="Deal description / deliverables..."
+        placeholderTextColor={Colors.textTertiary}
+        multiline
+        textAlignVertical="top"
+      />
+      <TextInput
+        style={styles.input}
+        value={formData.budget}
+        onChangeText={(t) => setFormData((p) => ({ ...p, budget: t }))}
+        placeholder="Budget ($)"
+        placeholderTextColor={Colors.textTertiary}
+        keyboardType="numeric"
+      />
+      <View style={styles.dateRow}>
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowDatePicker((v) => !v)}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Set deal date"
+        >
+          <Calendar size={16} color={Colors.textSecondary} />
+          <Text style={[styles.dateButtonText, !formData.dueDate && { color: Colors.textTertiary }]}>
+            {formData.dueDate
+              ? new Date(formData.dueDate).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Add a date (optional)"}
+          </Text>
+        </TouchableOpacity>
+        {formData.dueDate ? (
+          <TouchableOpacity
+            onPress={() => {
+              setFormData((p) => ({ ...p, dueDate: "" }));
+              setShowDatePicker(false);
+            }}
+            style={styles.dateClear}
+            accessibilityRole="button"
+            accessibilityLabel="Clear deal date"
+          >
+            <X size={16} color={Colors.textTertiary} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      {showDatePicker && (Platform.OS === "ios" || Platform.OS === "android") && (
+        <View style={styles.datePickerWrap}>
+          {(() => {
+            const DateTimePicker = require("@react-native-community/datetimepicker").default;
+            return (
+              <DateTimePicker
+                value={formData.dueDate ? new Date(formData.dueDate) : new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "default"}
+                themeVariant="dark"
+                accentColor={Colors.primary}
+                onChange={(_event: any, selectedDate?: Date) => {
+                  if (Platform.OS === "android") setShowDatePicker(false);
+                  if (selectedDate) {
+                    setFormData((p) => ({ ...p, dueDate: selectedDate.toISOString() }));
+                  }
+                }}
+              />
+            );
+          })()}
+          {Platform.OS === "ios" && (
+            <TouchableOpacity style={styles.datePickerDone} onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.datePickerDoneText}>Done</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+      {editingId && (
+        <View style={styles.statusPickerWrap}>
+          <Text style={styles.statusPickerLabel}>Status</Text>
+          <View style={styles.statusPickerRow}>
+            {DEAL_STATUSES.map((s) => {
+              const active = formData.status === s.value;
+              return (
+                <TouchableOpacity
+                  key={s.value}
+                  style={[styles.statusPickChip, active && { backgroundColor: s.bg, borderColor: s.color }]}
+                  onPress={() => setFormData((p) => ({ ...p, status: s.value }))}
+                >
+                  <Text style={[styles.statusPickText, active && { color: s.color }]}>{s.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      )}
+      <TouchableOpacity style={styles.saveBtn} onPress={onSubmit} activeOpacity={0.8}>
+        <Text style={styles.saveBtnText}>{editingId ? "Save Changes" : "Add Deal"}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 // eslint-disable-next-line max-lines-per-function -- tracked in #1
 export default function DealsScreen() {
   const router = useRouter();
@@ -261,149 +419,19 @@ export default function DealsScreen() {
         </ScrollView>
 
         {(showAddForm || editingId) && (
-          <View style={styles.addForm}>
-            <View style={styles.addFormHeader}>
-              <Text style={styles.addFormTitle}>{editingId ? "Edit Deal" : "New Deal"}</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowAddForm(false);
-                  setEditingId(null);
-                  resetForm();
-                }}
-                style={styles.closeBtn}
-                accessibilityRole="button"
-                accessibilityLabel="Close form"
-              >
-                <X size={18} color={Colors.textSecondary} />
-              </TouchableOpacity>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={formData.brandName}
-              onChangeText={(t) => setFormData((p) => ({ ...p, brandName: t }))}
-              placeholder="Brand name"
-              placeholderTextColor={Colors.textTertiary}
-            />
-            <TextInput
-              style={styles.input}
-              value={formData.contactEmail}
-              onChangeText={(t) => setFormData((p) => ({ ...p, contactEmail: t }))}
-              placeholder="Contact email"
-              placeholderTextColor={Colors.textTertiary}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={[styles.input, styles.descInput]}
-              value={formData.description}
-              onChangeText={(t) => setFormData((p) => ({ ...p, description: t }))}
-              placeholder="Deal description / deliverables..."
-              placeholderTextColor={Colors.textTertiary}
-              multiline
-              textAlignVertical="top"
-            />
-            <TextInput
-              style={styles.input}
-              value={formData.budget}
-              onChangeText={(t) => setFormData((p) => ({ ...p, budget: t }))}
-              placeholder="Budget ($)"
-              placeholderTextColor={Colors.textTertiary}
-              keyboardType="numeric"
-            />
-            <View style={styles.dateRow}>
-              <TouchableOpacity
-                style={styles.dateButton}
-                onPress={() => setShowDatePicker((v) => !v)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Set deal date"
-              >
-                <Calendar size={16} color={Colors.textSecondary} />
-                <Text
-                  style={[styles.dateButtonText, !formData.dueDate && { color: Colors.textTertiary }]}
-                >
-                  {formData.dueDate
-                    ? new Date(formData.dueDate).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "Add a date (optional)"}
-                </Text>
-              </TouchableOpacity>
-              {formData.dueDate ? (
-                <TouchableOpacity
-                  onPress={() => {
-                    setFormData((p) => ({ ...p, dueDate: "" }));
-                    setShowDatePicker(false);
-                  }}
-                  style={styles.dateClear}
-                  accessibilityRole="button"
-                  accessibilityLabel="Clear deal date"
-                >
-                  <X size={16} color={Colors.textTertiary} />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-            {showDatePicker && (Platform.OS === "ios" || Platform.OS === "android") && (
-              <View style={styles.datePickerWrap}>
-                {(() => {
-                  const DateTimePicker = require("@react-native-community/datetimepicker").default;
-                  return (
-                    <DateTimePicker
-                      value={formData.dueDate ? new Date(formData.dueDate) : new Date()}
-                      mode="date"
-                      display={Platform.OS === "ios" ? "inline" : "default"}
-                      themeVariant="dark"
-                      accentColor={Colors.primary}
-                      onChange={(_event: any, selectedDate?: Date) => {
-                        if (Platform.OS === "android") setShowDatePicker(false);
-                        if (selectedDate) {
-                          setFormData((p) => ({ ...p, dueDate: selectedDate.toISOString() }));
-                        }
-                      }}
-                    />
-                  );
-                })()}
-                {Platform.OS === "ios" && (
-                  <TouchableOpacity style={styles.datePickerDone} onPress={() => setShowDatePicker(false)}>
-                    <Text style={styles.datePickerDoneText}>Done</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-            {editingId && (
-              <View style={styles.statusPickerWrap}>
-                <Text style={styles.statusPickerLabel}>Status</Text>
-                <View style={styles.statusPickerRow}>
-                  {DEAL_STATUSES.map((s) => {
-                    const active = formData.status === s.value;
-                    return (
-                      <TouchableOpacity
-                        key={s.value}
-                        style={[
-                          styles.statusPickChip,
-                          active && { backgroundColor: s.bg, borderColor: s.color },
-                        ]}
-                        onPress={() => setFormData((p) => ({ ...p, status: s.value }))}
-                      >
-                        <Text style={[styles.statusPickText, active && { color: s.color }]}>
-                          {s.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
-            <TouchableOpacity
-              style={styles.saveBtn}
-              onPress={editingId ? handleSaveEdit : handleAdd}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.saveBtnText}>{editingId ? "Save Changes" : "Add Deal"}</Text>
-            </TouchableOpacity>
-          </View>
+          <DealFormCard
+            formData={formData}
+            setFormData={setFormData}
+            editingId={editingId}
+            showDatePicker={showDatePicker}
+            setShowDatePicker={setShowDatePicker}
+            onClose={() => {
+              setShowAddForm(false);
+              setEditingId(null);
+              resetForm();
+            }}
+            onSubmit={editingId ? handleSaveEdit : handleAdd}
+          />
         )}
 
         {filteredDeals.length > 0 ? (
