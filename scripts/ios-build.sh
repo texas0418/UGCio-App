@@ -20,27 +20,34 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WORKSPACE="$REPO/ios/UGCPortfolioRateHub.xcworkspace"
+# Native project lives under expo/ (the app was restructured into expo/).
+# Regenerate it with: (cd expo && npx expo prebuild -p ios --no-install)
+WORKSPACE="$REPO/expo/ios/UGCPortfolioRateHub.xcworkspace"
 SCHEME="UGCPortfolioRateHub"
 CONFIG="${CONFIG:-Release}"
+TEAM="${DEVELOPMENT_TEAM:-75ULC33H2C}"
 
 # Isolated build output — override with UGCIO_DERIVED_DATA if desired.
 DERIVED_DATA="${UGCIO_DERIVED_DATA:-$HOME/Library/Developer/Xcode/DerivedData-UGCio}"
 
-# Hardware UDID of the target device (xcodebuild -destination wants this, which
-# is NOT the same as the devicectl identifier used by ios-install.sh).
-DEVICE_UDID="${DEVICE_UDID:-00008030-000A69580CC1802E}"
+# The physical iPhone is already registered in the com.ugcio.app profile, so a
+# generic iOS destination produces an installable build without the device
+# attached. Target a specific device (DEVICE_UDID=...) to register a new one.
+DESTINATION="${DESTINATION:-generic/platform=iOS}"
 
 echo "Building $SCHEME ($CONFIG)"
+echo "  Workspace:   $WORKSPACE"
 echo "  DerivedData: $DERIVED_DATA (isolated)"
-echo "  Device UDID: $DEVICE_UDID"
+echo "  Destination: $DESTINATION  Team: $TEAM"
 
 xcodebuild \
   -workspace "$WORKSPACE" \
   -scheme "$SCHEME" \
   -configuration "$CONFIG" \
-  -destination "id=$DEVICE_UDID" \
+  -destination "$DESTINATION" \
   -derivedDataPath "$DERIVED_DATA" \
+  DEVELOPMENT_TEAM="$TEAM" \
+  CODE_SIGN_STYLE=Automatic \
   -allowProvisioningUpdates \
   -allowProvisioningDeviceRegistration \
   build
