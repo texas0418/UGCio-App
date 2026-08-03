@@ -6,6 +6,10 @@ let useIAP: any = null;
 let initConnection: any = null;
 let endConnection: any = null;
 let getAvailablePurchases: any = null;
+// Module-level fetchProducts, which resolves to the fetched products. The
+// useIAP hook's wrapper of the same name resolves to void and routes results
+// into hook state, so it can't be read back within the same callback.
+let fetchProductsDirect: any = null;
 
 if (Platform.OS !== "web") {
   try {
@@ -14,6 +18,7 @@ if (Platform.OS !== "web") {
     initConnection = expoIAP.initConnection;
     endConnection = expoIAP.endConnection;
     getAvailablePurchases = expoIAP.getAvailablePurchases;
+    fetchProductsDirect = expoIAP.fetchProducts;
   } catch {
     // expo-iap not available
   }
@@ -115,14 +120,21 @@ function SubscriptionManager({ children }: { children: React.ReactNode }) {
     }
   }, [iap]);
 
-  // Fetch products and return them
+  // Fetch subscription products and return them.
+  // Uses the module-level fetchProducts (which resolves to the results) rather
+  // than the hook wrapper, which resolves to void and pushes results into hook
+  // state — that state isn't visible until a re-render, and subscriptions land
+  // in `subscriptions`, never in `products`.
   const fetchProducts = useCallback(async (): Promise<any[]> => {
-    if (!iap) return [];
     try {
-      await iap.fetchProducts({ skus: [PRODUCT_ID], type: "subs" });
-      return iap.products ?? [];
+      if (fetchProductsDirect) {
+        const result = await fetchProductsDirect({ skus: [PRODUCT_ID], type: "subs" });
+        if (Array.isArray(result) && result.length > 0) return result;
+      }
+      // Fall back to whatever the hook has already loaded into state.
+      return iap?.subscriptions ?? [];
     } catch {
-      return [];
+      return iap?.subscriptions ?? [];
     }
   }, [iap]);
 
