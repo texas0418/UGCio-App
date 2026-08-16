@@ -51,7 +51,8 @@
       "expo-font",
       "expo-web-browser",
       "./plugins/withExportCompliance",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "./plugins/withReleaseSigning.js"
     ],
     "experiments": {
       "typedRoutes": true
