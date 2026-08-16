@@ -27,8 +27,8 @@ Stop negotiating from memory. Open UGCio and run it like a business.
 -----------------------------------------------------
 
 CATEGORY: Business
-PRIVACY POLICY URL: https://texas0418.github.io/UGCio-App/privacy.html
-  *** ACTION NEEDED (Simon): enable GitHub Pages (main /docs) after promotion — docs/privacy.html is in this PR.
+PRIVACY POLICY URL (real, verified live 2026-08-16): https://www.ugcio.app/privacy
+
 
 GRAPHIC ASSETS (expo/store/): icon + feature graphic DONE; screenshots-android/ from release APK this run
 
