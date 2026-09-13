@@ -1,0 +1,39 @@
+UGCIO — GOOGLE PLAY STORE LISTING (draft 2026-08-16)
+======================================================
+
+APP NAME (30 chars max)
+UGCio: Creator Rate Hub
+
+SHORT DESCRIPTION (80 chars max)
+Portfolio, rate card, and deal tracker — run your UGC business like one.
+
+FULL DESCRIPTION (4000 chars max)
+-----------------------------------------------------
+You make content brands pay for. UGCio is where the business side lives.
+
+YOUR PORTFOLIO, READY TO SEND
+Keep your best work organized and shareable — when a brand asks "got examples?", the answer takes ten seconds.
+
+RATES YOU DON'T HAVE TO APOLOGIZE FOR
+Build your rate card once: usage, exclusivity, raw files, rush fees. Quote from a card, not from a guess made at 11 pm in a DM.
+
+DEALS, TRACKED
+Who reached out, what was quoted, what's agreed, what's delivered, who's paid. The pipeline every creator keeps in their head — out of your head.
+
+BUILT FOR WORKING CREATORS
+No agency, no marketplace, no middleman fees. Your portfolio, your rates, your deals — on your phone.
+
+Stop negotiating from memory. Open UGCio and run it like a business.
+-----------------------------------------------------
+
+CATEGORY: Business
+PRIVACY POLICY URL (real, verified live 2026-08-16): https://www.ugcio.app/privacy
+
+
+GRAPHIC ASSETS (expo/store/): icon + feature graphic DONE; screenshots-android/ from release APK this run
+
+DATA SAFETY: no Supabase/accounts in deps — local data; verify no Rork toolkit network calls at submission; purchases: app shows a "14d left" TRIAL badge — a subscription/unlock likely exists; verify products + declare purchase data before submission
+CONTENT RATING: Everyone
+
+RELEASE NOTES (first release)
+UGCio arrives on Android: portfolio, rate card, and deal tracking for UGC creators — the business side of content, handled.
