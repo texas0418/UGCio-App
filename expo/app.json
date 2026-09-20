@@ -30,7 +30,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ugcio.app"
+      "package": "com.ugcio.app",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
