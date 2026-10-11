@@ -2,7 +2,7 @@
   "expo": {
     "name": "UGC Portfolio & Rate Hub",
     "slug": "ugc-portfolio-rate-hub",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ugcio",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ugcio.app",
-      "buildNumber": "9",
+      "buildNumber": "10",
       "infoPlist": {
         "CFBundleDisplayName": "UGCio",
         "ITSAppUsesNonExemptEncryption": false,
