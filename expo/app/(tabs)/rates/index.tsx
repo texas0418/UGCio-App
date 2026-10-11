@@ -27,6 +27,7 @@ import {
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { showAlert } from "@/utils/alert";
+import { recordMilestoneCompleted } from "@/utils/review";
 import { useCreator } from "@/contexts/CreatorContext";
 import { Deliverable } from "@/types";
 import { RATE_TEMPLATES } from "@/mocks/templates";
@@ -85,6 +86,8 @@ export default function RatesScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
+    // Earned-value moment: rate card deliverable saved successfully.
+    recordMilestoneCompleted();
   }, [editingId, formData, updateDeliverable]);
 
   const handleAdd = useCallback(() => {
