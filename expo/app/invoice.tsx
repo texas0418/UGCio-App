@@ -21,6 +21,7 @@ import {
 import Colors from "@/constants/colors";
 import { showAlert } from "@/utils/alert";
 import { isValidEmail } from "@/utils/validate";
+import { recordMilestoneCompleted } from "@/utils/review";
 import { useCreator } from "@/contexts/CreatorContext";
 import { Invoice, InvoiceItem } from "@/types";
 
@@ -158,6 +159,8 @@ export default function InvoiceScreen() {
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
+    // Earned-value moment: invoice generated and saved successfully.
+    recordMilestoneCompleted();
     showAlert("Invoice Saved!", "Your invoice has been saved.", [
       { text: "OK", onPress: () => router.back() },
     ]);
